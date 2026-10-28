@@ -1,8 +1,24 @@
 # 學途 Hoktou
 
+線上玩：[https://tn-ip.github.io/hoktou/](https://tn-ip.github.io/hoktou/)
+
 香港中學生活模擬遊戲。玩家由虛構的望潮中學中一讀到中六，在中三選科，在中六排列一份**遊戲裡的**升學志願，然後看到與這條路相連的工作與生活。
 
 This is a fictional secondary-school life simulation set in Hong Kong. You begin Secondary 1 at the invented Mongchiu Secondary School, choose electives in S3, rank a short fictional preference list in S6, and see a work-and-life epilogue tied to that path.
+
+## 線上版 GitHub Pages
+
+推送到 `main` 會跑 [`.github/workflows/pages.yml`](.github/workflows/pages.yml)。流程用 `npm ci`、`npm test`、`npm run build`，再以官方的 `actions/upload-pages-artifact` 與 `actions/deploy-pages` 發佈 `out/`。沒有用 Vercel。
+
+網站是 GitHub 專案頁，掛在子路徑 `/hoktou`。`next.config.ts` 設定 `output: 'export'`、`basePath`、`assetPrefix` 同 `trailingSlash`，所以腳本、樣式同字型都會從 `https://tn-ip.github.io/hoktou/` 載入。未知路徑會回到同一套客戶端頁面（`out/404.html`）。
+
+Pages 的 Source 必須是 **GitHub Actions**（Settings → Pages → Build and deployment → Source）。若倉庫尚未開 Pages，第一次部署會失敗；選好 Source 後在 Actions 重跑「Deploy GitHub Pages」即可。
+
+Pushes to `main` run [`.github/workflows/pages.yml`](.github/workflows/pages.yml): `npm ci`, `npm test`, `npm run build`, then the official `actions/upload-pages-artifact` and `actions/deploy-pages` steps publish the `out/` folder. This does not use Vercel.
+
+The site is a GitHub project page under `/hoktou`. `next.config.ts` sets `output: 'export'`, `basePath`, `assetPrefix`, and `trailingSlash`, so scripts, CSS, and fonts load from `https://tn-ip.github.io/hoktou/`. Unknown paths serve the same client app (`out/404.html`).
+
+Pages source must be **GitHub Actions** (Settings → Pages → Build and deployment → Source). If Pages is not enabled yet, the first deploy fails; choose that source, then rerun the “Deploy GitHub Pages” workflow.
 
 ## 免責 Disclaimer
 
@@ -19,15 +35,19 @@ npm install
 npm run dev
 ```
 
-瀏覽器打開 [http://localhost:3000](http://localhost:3000)。
+瀏覽器打開 [http://localhost:3000/hoktou](http://localhost:3000/hoktou)。開發同線上都用 `/hoktou` 子路徑。
 
-To check the rules and production build:
+To check the rules and the static export:
 
 ```bash
 npm test
 npm run build
 npm start
 ```
+
+`npm run build` 寫入 `out/`。`npm start` 用同一個子路徑預覽靜態檔：[http://localhost:3000/hoktou/](http://localhost:3000/hoktou/)。`next start` 不適用於靜態匯出。
+
+`npm run build` writes `out/`. `npm start` previews those static files at [http://localhost:3000/hoktou/](http://localhost:3000/hoktou/). `next start` does not serve a static export.
 
 進度只存在這部瀏覽器的 `localStorage`（鍵名 `hoktou.v1`）。沒有帳戶，也不會上傳。
 
