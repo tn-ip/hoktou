@@ -12,13 +12,13 @@ This is a fictional secondary-school life simulation set in Hong Kong. You begin
 
 網站是 GitHub 專案頁，掛在子路徑 `/hoktou`。`next.config.ts` 設定 `output: 'export'`、`basePath`、`assetPrefix` 同 `trailingSlash`，所以腳本、樣式同字型都會從 `https://tn-ip.github.io/hoktou/` 載入。未知路徑會回到同一套客戶端頁面（`out/404.html`）。
 
-Pages 的 Source 必須是 **GitHub Actions**（Settings → Pages → Build and deployment → Source）。若倉庫尚未開 Pages，第一次部署會失敗；選好 Source 後在 Actions 重跑「Deploy GitHub Pages」即可。
+這個倉庫的 Pages source 已設為 **GitHub Actions**（Settings → Pages → Build and deployment → Source）。
 
 Pushes to `main` run [`.github/workflows/pages.yml`](.github/workflows/pages.yml): `npm ci`, `npm test`, `npm run build`, then the official `actions/upload-pages-artifact` and `actions/deploy-pages` steps publish the `out/` folder. This does not use Vercel.
 
 The site is a GitHub project page under `/hoktou`. `next.config.ts` sets `output: 'export'`, `basePath`, `assetPrefix`, and `trailingSlash`, so scripts, CSS, and fonts load from `https://tn-ip.github.io/hoktou/`. Unknown paths serve the same client app (`out/404.html`).
 
-Pages source must be **GitHub Actions** (Settings → Pages → Build and deployment → Source). If Pages is not enabled yet, the first deploy fails; choose that source, then rerun the “Deploy GitHub Pages” workflow.
+This repository's Pages source is **GitHub Actions** (Settings → Pages → Build and deployment → Source).
 
 ## 免責 Disclaimer
 
