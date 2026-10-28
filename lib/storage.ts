@@ -63,7 +63,7 @@ function readLog(value: unknown): LogEntry[] {
     if (typeof entry.sceneId !== "string" || typeof entry.choiceId !== "string") continue;
     if (typeof entry.year !== "string") continue;
     if (!isLocale(entry.title) || !isLocale(entry.choice)) continue;
-    if (!["S1", "S2", "S3", "S4", "S5", "S6"].includes(entry.year)) continue;
+    if (!["S1", "S2", "S3", "S4", "S5", "S6", "life"].includes(entry.year)) continue;
     log.push({
       sceneId: entry.sceneId,
       year: entry.year as LogEntry["year"],

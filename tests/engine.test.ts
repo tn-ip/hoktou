@@ -3,9 +3,11 @@ import { describe, it } from "node:test";
 import { copy } from "@/content/copy";
 import { endingView, offerView } from "@/content/endings";
 import { PROGRAMMES } from "@/content/programmes";
-import { PLAYLIST, SCENES, sceneById } from "@/content/scenes";
+import { EXTRA_SCENE_IDS } from "@/content/decisions";
+import { LIFE_PLAYLIST, PLAYLIST, SCENES, sceneById } from "@/content/scenes";
 import { ELECTIVES, PRESETS } from "@/content/subjects";
 import {
+  advancePhase,
   applyChoice,
   applyEffects,
   choiceIds,
@@ -83,7 +85,7 @@ function play(
     if (run.phase === "electives") run = confirmElectives(run, electives, math);
     else if (run.phase === "ranking") run = confirmRanking(run, ranking.slice(0, rankTarget(pace)));
     else run = applyChoice(run, pick(run.sceneId, choiceIds(run)));
-    if (++guard > 40) throw new Error(`loop at ${run.phase} ${run.sceneId}`);
+    if (++guard > 120) throw new Error(`loop at ${run.phase} ${run.sceneId}`);
   }
   return run;
 }
@@ -99,6 +101,21 @@ describe("hoktou loop", () => {
       beat.kind === "scene" ? beat.id : "",
     );
     assert.deepEqual(fastIds, fast);
+    assert.equal(EXTRA_SCENE_IDS.length, 50);
+    assert.equal(new Set(EXTRA_SCENE_IDS).size, 50);
+    for (const id of EXTRA_SCENE_IDS) assert.ok(sceneById(id), id);
+    const listed = [...PLAYLIST, ...LIFE_PLAYLIST].flatMap((beat) => (beat.kind === "scene" ? [beat.id] : []));
+    for (const id of EXTRA_SCENE_IDS) assert.ok(listed.includes(id), id);
+    assert.equal(LIFE_PLAYLIST.length, 8);
+    assert.ok(EXTRA_SCENE_IDS.filter((id) => id.startsWith("s1-") || id.startsWith("s2-")).length >= 12);
+    assert.ok(EXTRA_SCENE_IDS.filter((id) => id.startsWith("s3")).length >= 10);
+    assert.ok(EXTRA_SCENE_IDS.filter((id) => id.startsWith("s4-") || id.startsWith("s5-")).length >= 12);
+    assert.ok(EXTRA_SCENE_IDS.filter((id) => id.startsWith("s6-")).length >= 8);
+    assert.ok(EXTRA_SCENE_IDS.filter((id) => id.startsWith("life-")).length >= 8);
+    for (const id of EXTRA_SCENE_IDS) {
+      const count = sceneById(id)?.choices(sampleContexts()[0]).length ?? 0;
+      assert.ok(count >= 2 && count <= 4, `${id} has ${count} choices`);
+    }
   });
 
   it("clamps stats", () => {
@@ -166,6 +183,20 @@ describe("hoktou loop", () => {
       assert.ok(ending.work.length > 20);
       assert.equal(BAD_ZH.test(offer.paragraphs.join("")), false);
       assert.equal(BAD_ZH.test(endingView(run, "zh").life), false);
+      if (pace === "standard") {
+        let life = advancePhase(run);
+        assert.equal(life.sceneId, "life-orientation");
+        let steps = 0;
+        while (life.phase === "scene") {
+          life = applyChoice(life, choiceIds(life)[0]);
+          if (++steps > 20) throw new Error("life loop");
+        }
+        assert.equal(steps, 8);
+        assert.equal(life.phase, "epilogue");
+        assert.equal(BAD_ZH.test(endingView(life, "zh").life), false);
+      } else {
+        assert.equal(advancePhase(run).phase, "epilogue");
+      }
     }
   });
 

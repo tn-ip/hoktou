@@ -56,13 +56,13 @@ Progress stays in this browser under `localStorage` (`hoktou.v1`). There is no a
 ## 怎樣玩 How to play
 
 1. 標題畫面選語言（繁體中文／English）、旅程長度，然後開始。
-2. **快速**大約十個決定；**標準**在中一至中三多停幾張卡，大約二十個決定。兩種長度都會走完中一、中二、中三選科、中四至中六、志願同尾聲。
-3. 每張卡是一年裡的一個場面，選一至三個做法。四項狀態會跟著動。
+2. **快速**大約十個決定；**標準**由中一走到工作與生活，大約七十個決定。兩種長度都會走完中一、中二、中三選科、中四至中六、志願同尾聲。
+3. 每張卡是一個場面，選二至四個做法。四項狀態、選科提示、遊戲指數或尾聲會跟著動。
 4. 中三選三科選修，可另選數學延伸單元一或二。
 5. 中六把虛構課程由上至下排列。遊戲由第一志願開始，第一個同時符合科目條件同門檻的課程會取錄。
 6. 尾聲是早年工作與生活。總結可以重新開始。
 
-The title screen has Traditional Chinese and English, plus Fast and Standard length. Fast is about ten decisions. Standard lingers in junior secondary, about twenty. Both include S1–S3, electives, S4–S6, the preference round and the epilogue. Each card has one to three actions. The four on-screen stats are 學業 Study, 好奇 Curiosity, 身心 Wellbeing and 人際 Bonds.
+The title screen has Traditional Chinese and English, plus Fast and Standard length. Fast is about ten decisions. Standard runs from S1 into work and life, about seventy decisions. Both include S1–S3, electives, S4–S6, the preference round and the epilogue. Each card has two to four actions. The four on-screen stats are 學業 Study, 好奇 Curiosity, 身心 Wellbeing and 人際 Bonds.
 
 ## MVP 範圍 Scope
 

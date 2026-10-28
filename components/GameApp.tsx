@@ -669,7 +669,7 @@ function SummaryCard({
         {run.log.map((entry, index) => (
           <li key={`${entry.sceneId}-${index}`}>
             <div className="year">
-              {tx(lang, copy.steps[entry.year === "S3" && entry.sceneId === "electives" ? "pick" : entry.year])}
+              {tx(lang, copy.steps[entry.year === "life" ? "out" : entry.year === "S3" && entry.sceneId === "electives" ? "pick" : entry.year])}
               {" · "}
               {tx(lang, entry.title)}
             </div>

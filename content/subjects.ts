@@ -106,6 +106,12 @@ export function electiveIntro(flags: Flags, lang: Lang): string {
     if (flags.voices === "steady") extra.push("家人提過想你穩陣一點。表格仍由你填。");
     if (flags.voices === "interest") extra.push("家人提過：有興趣，才走得完這三年。");
     if (flags.voices === "open") extra.push("陳老師說過：科目是工具，不是你的全部身份。");
+    if (flags.taster === "science") extra.push("你試過一堂實驗，手還記得手套的氣味。");
+    if (flags.taster === "biz") extra.push("你試過一堂個案討論，發現自己會追問數字從哪來。");
+    if (flags.taster === "art") extra.push("你在工作室留過一小時，安靜比你預想的更費神。");
+    if (flags.mathPull === "m1") extra.push("延伸數學講座之後，你對單元一的統計比較有感覺。");
+    if (flags.mathPull === "m2") extra.push("延伸數學講座之後，你對單元二的代數比較有感覺。");
+    if (flags.mathPull === "core") extra.push("你決定延伸數學先不加，把力氣留在三個選修。");
   } else {
     if (flags.lean === "science") extra.push("At the briefing you stayed longest at the science booths.");
     if (flags.lean === "broad") extra.push("At the briefing you walked the other booths as well.");
@@ -113,6 +119,12 @@ export function electiveIntro(flags: Flags, lang: Lang): string {
     if (flags.voices === "steady") extra.push("Someone at home mentioned wanting a steadier mix. The form is still yours.");
     if (flags.voices === "interest") extra.push("Someone at home said interest is what carries a person through three years.");
     if (flags.voices === "open") extra.push("Ms Chan said subjects are tools, not the whole of who you are.");
+    if (flags.taster === "science") extra.push("You sat one lab taster. Your hands still remember the gloves.");
+    if (flags.taster === "biz") extra.push("You sat one case discussion and kept asking where the numbers came from.");
+    if (flags.taster === "art") extra.push("You stayed an hour in the studio. The quiet cost more energy than you expected.");
+    if (flags.mathPull === "m1") extra.push("After the talk, module 1 statistics made more sense to you.");
+    if (flags.mathPull === "m2") extra.push("After the talk, module 2 algebra made more sense to you.");
+    if (flags.mathPull === "core") extra.push("You are leaving extended maths off, and keeping your effort for three electives.");
   }
   return [base, ...extra].join(lang === "zh" ? "" : " ");
 }

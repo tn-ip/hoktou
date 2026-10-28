@@ -2,7 +2,7 @@ export type Lang = "zh" | "en";
 
 export type Pace = "fast" | "standard";
 
-export type YearId = "S1" | "S2" | "S3" | "S4" | "S5" | "S6";
+export type YearId = "S1" | "S2" | "S3" | "S4" | "S5" | "S6" | "life";
 
 export type Phase =
   | "scene"
@@ -69,6 +69,22 @@ export type Flags = {
   doubt: boolean;
   grindExam: boolean;
   spring: "" | "steady" | "cram" | "care";
+  taster: "" | "science" | "biz" | "art";
+  mathPull: "" | "m1" | "m2" | "core";
+  reference: "" | "full" | "plain" | "careful";
+  slp: "" | "thick" | "honest" | "thin";
+  interview: "" | "drill" | "story" | "skip";
+  listStyle: "" | "reach" | "safe" | "advice";
+  backup: "" | "sub" | "work" | "retry";
+  folio: "" | "start" | "later" | "skip";
+  campus: "" | "people" | "map" | "home";
+  hours: "" | "bounded" | "overtime" | "shifts";
+  dwelling: "" | "home" | "dorm" | "share";
+  payday: "" | "save" | "family" | "tool";
+  mentor: "" | "ask" | "watch" | "none";
+  oldFriends: "" | "keep" | "new" | "quiet";
+  sideQuest: "" | "question" | "teach" | "drop";
+  sunday: "" | "sea" | "work" | "people";
 };
 
 export type OfferKind = "none" | "degree" | "subdegree" | "work";

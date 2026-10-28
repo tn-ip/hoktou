@@ -1,3 +1,4 @@
+import { EXTRA_SCENES } from "@/content/decisions";
 import { joinElectives } from "@/content/subjects";
 import { decideFair, projectTrack } from "@/lib/track";
 import type {
@@ -15,26 +16,81 @@ export type Beat =
   | { kind: "scene"; id: string; pace: "all" | "standard" }
   | { kind: "electives"; pace: "all" | "standard" };
 
+const standard = (id: string): Beat => ({ kind: "scene", id, pace: "standard" });
+
 export const PLAYLIST: Beat[] = [
   { kind: "scene", id: "s1-arrival", pace: "all" },
+  standard("s1-recess"),
+  standard("s1-english"),
+  standard("s1-pe"),
+  standard("s1-homework"),
   { kind: "scene", id: "s1-quiz", pace: "standard" },
+  standard("s1-library"),
+  standard("s1-rain"),
   { kind: "scene", id: "s1-summer", pace: "standard" },
   { kind: "scene", id: "s2-clubs", pace: "all" },
+  standard("s2-lab"),
+  standard("s2-phone"),
+  standard("s2-group"),
   { kind: "scene", id: "s2-home", pace: "standard" },
+  standard("s2-festival"),
+  standard("s2-trial"),
   { kind: "scene", id: "s2-spring", pace: "standard" },
+  standard("s2-sea"),
   { kind: "scene", id: "s3-crossroad", pace: "all" },
+  standard("s3-taster"),
+  standard("s3-strength"),
+  standard("s3-fear"),
   { kind: "scene", id: "s3-voices", pace: "standard" },
+  standard("s3-clash"),
+  standard("s3-split"),
+  standard("s3-math-talk"),
+  standard("s3-parents"),
+  standard("s3-shadow"),
+  standard("s3-draft"),
   { kind: "electives", pace: "all" },
   { kind: "scene", id: "s3-summer", pace: "standard" },
+  standard("s3b-camp"),
   { kind: "scene", id: "s4-open", pace: "all" },
+  standard("s4-partner"),
+  standard("s4-oral"),
   { kind: "scene", id: "s4-mid", pace: "standard" },
+  standard("s4-talk"),
+  standard("s4-sick"),
+  standard("s4-invite"),
   { kind: "scene", id: "s4-exam", pace: "standard" },
+  standard("s4-night"),
   { kind: "scene", id: "s5-heat", pace: "all" },
+  standard("s5-predict"),
+  standard("s5-sleep"),
   { kind: "scene", id: "s5-showcase", pace: "all" },
+  standard("s5-team"),
+  standard("s5-mentor"),
+  standard("s5-folio"),
   { kind: "scene", id: "s5-body", pace: "standard" },
+  standard("s5-trip"),
   { kind: "scene", id: "s6-mock", pace: "all" },
+  standard("s6-reference"),
+  standard("s6-slp"),
+  standard("s6-infoday"),
+  standard("s6-interview"),
+  standard("s6-strategy"),
+  standard("s6-who"),
+  standard("s6-backup"),
   { kind: "scene", id: "s6-spring", pace: "standard" },
+  standard("s6-eve"),
 ];
+
+export const LIFE_PLAYLIST: Beat[] = [
+  "life-orientation",
+  "life-hours",
+  "life-rent",
+  "life-pay",
+  "life-mentor",
+  "life-friends",
+  "life-question",
+  "life-sunday",
+].map((id) => standard(id));
 
 function mathSentence(math: MathModule): LocaleText {
   if (math === "m1") {
@@ -264,7 +320,7 @@ function skipChoice(ctx: SceneCtx, label: LocaleText): Choice {
   };
 }
 
-export const SCENES: Scene[] = [
+const BASE_SCENES: Scene[] = [
   {
     id: "s1-arrival",
     year: "S1",
@@ -857,6 +913,8 @@ export const SCENES: Scene[] = [
     ],
   },
 ];
+
+export const SCENES: Scene[] = [...BASE_SCENES, ...EXTRA_SCENES];
 
 export function sceneById(id: string): Scene | undefined {
   return SCENES.find((scene) => scene.id === id);

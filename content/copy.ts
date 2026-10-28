@@ -9,7 +9,7 @@ export const copy = {
   length: line("旅程長度", "Length"),
   paceStandard: line("標準", "Standard"),
   paceFast: line("快速", "Fast"),
-  paceStandardHint: line("中一至中三慢一點，大約二十個決定。", "Junior secondary lingers. About twenty decisions."),
+  paceStandardHint: line("中一至出路都較密，大約七十個決定。", "A denser path from S1 to life. About seventy decisions."),
   paceFastHint: line("大約十個決定，中一至出路仍然完整。", "About ten decisions. S1 to an outcome, still complete."),
   start: line("開始", "Start"),
   continue: line("繼續旅程", "Continue"),

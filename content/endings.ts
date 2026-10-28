@@ -163,6 +163,68 @@ function memoryLine(run: RunState, lang: Lang): string {
   return (lang === "zh" ? zh : en)[track];
 }
 
+function lifeAfter(run: RunState, lang: Lang): string[] {
+  const { flags } = run;
+  if (lang === "zh") {
+    const lines: string[] = [];
+    if (flags.campus === "people") lines.push("入學或入職第一週，你把名字先認了一圈。");
+    else if (flags.campus === "map") lines.push("第一週你先摸清課室、飯堂同洗手間，人稍後才熟。");
+    else if (flags.campus === "home") lines.push("第一週你大多留在自己的角落，把節奏先守住。");
+    if (flags.hours === "bounded") lines.push("你把收工和收書的時間寫死，並盡量遵守。");
+    else if (flags.hours === "overtime") lines.push("你常常留下加時。做出來的東西多，人也更薄。");
+    else if (flags.hours === "shifts") lines.push("你的星期被更表切開。你學會在空檔吃飯。");
+    if (flags.dwelling === "dorm") lines.push("宿舍的走廊很吵，你卻第一次自己買燈泡。");
+    else if (flags.dwelling === "share") lines.push("你跟朋友分租。公事和碗誰洗，要講清楚。");
+    else if (flags.dwelling === "home") lines.push("你仍住家裡。晚飯還在，路卻更長。");
+    if (flags.payday === "save") lines.push("第一筆錢你先存起一部分。");
+    else if (flags.payday === "family") lines.push("第一筆錢你拿了一部分回家。");
+    else if (flags.payday === "tool") lines.push("第一筆錢你買了一件會再用的工具或書。");
+    if (flags.mentor === "ask") lines.push("你找到一個願意被問的人，問題因此比較不容易爛在肚子裡。");
+    else if (flags.mentor === "watch") lines.push("你先看別人怎樣做，再決定要不要問。");
+    if (flags.oldFriends === "keep") lines.push("望潮的人你還約。話題換了，位子還在。");
+    else if (flags.oldFriends === "new") lines.push("新環境的人慢慢變熟，舊群組就靜了一點。");
+    else if (flags.oldFriends === "quiet") lines.push("你把聯絡收細。這是選擇，不是失蹤。");
+    if (flags.sideQuest === "question") lines.push("中學那個小問題你還在私下追，不為交功課。");
+    else if (flags.sideQuest === "teach") lines.push("你開始把懂的東西講給更年少的人聽。");
+    else if (flags.sideQuest === "drop") lines.push("有些中學問題你先放下。手上的生活已經夠滿。");
+    if (flags.sunday === "sea") lines.push("星期日你還是會去看海。");
+    else if (flags.sunday === "work") lines.push("星期日有時仍在做事。你知道這要有盡頭。");
+    else if (flags.sunday === "people") lines.push("星期日留給人，不留給待辦。");
+    if (flags.backup === "sub" && run.offerKind === "subdegree") lines.push("副學位是你事先想過的橋，所以你走得比較穩。");
+    if (flags.backup === "work" && run.offerKind === "work") lines.push("你早想過可以先工作。真正發生時，你沒有假裝驚訝。");
+    if (flags.backup === "retry" && (run.offerKind === "work" || run.offerKind === "subdegree")) lines.push("你把重來一次留在選項裡，同時先過眼前這一年。");
+    return lines;
+  }
+  const lines: string[] = [];
+  if (flags.campus === "people") lines.push("In the first week you learned names before you learned shortcuts.");
+  else if (flags.campus === "map") lines.push("In the first week you learned the rooms, the canteen, and the washrooms. People came after.");
+  else if (flags.campus === "home") lines.push("In the first week you mostly kept to your corner and protected the pace.");
+  if (flags.hours === "bounded") lines.push("You wrote down when work and study stop, and you try to keep it.");
+  else if (flags.hours === "overtime") lines.push("You often stay late. More gets done. You get thinner.");
+  else if (flags.hours === "shifts") lines.push("The week is cut into shifts. You learned to eat in the gaps.");
+  if (flags.dwelling === "dorm") lines.push("The hall corridor is noisy. You bought your own light bulb.");
+  else if (flags.dwelling === "share") lines.push("You share a flat. Someone has to say who washes the bowls.");
+  else if (flags.dwelling === "home") lines.push("You still live at home. Dinner is there. The journey is longer.");
+  if (flags.payday === "save") lines.push("From the first pay you set a part aside.");
+  else if (flags.payday === "family") lines.push("From the first pay you brought a part home.");
+  else if (flags.payday === "tool") lines.push("From the first pay you bought a tool or a book you would use again.");
+  if (flags.mentor === "ask") lines.push("You found someone who will be asked. Questions stop rotting in your stomach.");
+  else if (flags.mentor === "watch") lines.push("You watch how other people do it before you decide to ask.");
+  if (flags.oldFriends === "keep") lines.push("You still meet people from Mongchiu. The topics changed. The seat is there.");
+  else if (flags.oldFriends === "new") lines.push("People in the new place become familiar. The old chat goes quieter.");
+  else if (flags.oldFriends === "quiet") lines.push("You keep fewer messages. That is a choice, not a disappearance.");
+  if (flags.sideQuest === "question") lines.push("You still follow that small school question in private, not for a grade.");
+  else if (flags.sideQuest === "teach") lines.push("You started explaining what you know to someone younger.");
+  else if (flags.sideQuest === "drop") lines.push("Some school questions can wait. The life in your hands is already full.");
+  if (flags.sunday === "sea") lines.push("On Sundays you still go to look at the sea.");
+  else if (flags.sunday === "work") lines.push("Some Sundays are still for tasks. You know that needs an edge.");
+  else if (flags.sunday === "people") lines.push("Sunday is for people, not for the list.");
+  if (flags.backup === "sub" && run.offerKind === "subdegree") lines.push("The associate route was a bridge you had already considered, so you cross it more steadily.");
+  if (flags.backup === "work" && run.offerKind === "work") lines.push("You had already imagined starting with work. When it happened, you did not pretend to be shocked.");
+  if (flags.backup === "retry" && (run.offerKind === "work" || run.offerKind === "subdegree")) lines.push("Trying again stays on the table, while you live this year first.");
+  return lines;
+}
+
 function lifeParagraph(run: RunState, lang: Lang): string {
   const { social, wellbeing, curiosity } = run.stats;
   const bits: string[] = [memoryLine(run, lang)];
@@ -184,6 +246,7 @@ function lifeParagraph(run: RunState, lang: Lang): string {
     else if (run.flags.honestTired) bits.push("屋企人知道你會說出累。晚飯因此少了一點盤問，多了一點湯。");
     else if (run.flags.spring === "care") bits.push("你後來仍保留一個小習慣：做完一件難事，就好好吃一頓。");
     else if (run.flags.home === "autonomy") bits.push("你仍然自己排時間。這件事從中二開始，現在變成你的工作方式。");
+    bits.push(...lifeAfter(run, "zh"));
   } else {
     if (social >= 62) {
       bits.push("On Saturdays you still sit for an hour with Ching and Ka-ki in an old-district café. You rarely reopen exam papers. You mostly argue over the last piece of French toast.");
@@ -202,6 +265,7 @@ function lifeParagraph(run: RunState, lang: Lang): string {
     else if (run.flags.honestTired) bits.push("Your family knows you will say when you are tired. Dinner has fewer interrogations and more soup.");
     else if (run.flags.spring === "care") bits.push("You kept a small habit: after something hard, you eat a proper meal.");
     else if (run.flags.home === "autonomy") bits.push("You still arrange your own hours. That started in S2. It is now how you work.");
+    bits.push(...lifeAfter(run, "en"));
   }
   return bits.join(lang === "zh" ? "" : " ");
 }

@@ -1,4 +1,4 @@
-import { PLAYLIST, sceneById, type Beat } from "@/content/scenes";
+import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
 import { PROGRAMMES, programmeById, type Programme } from "@/content/programmes";
 import { joinElectives, mathLabel } from "@/content/subjects";
 import { fairAligns, projectTrack } from "@/lib/track";
@@ -46,6 +46,22 @@ export function defaultFlags(): RunState["flags"] {
     doubt: false,
     grindExam: false,
     spring: "",
+    taster: "",
+    mathPull: "",
+    reference: "",
+    slp: "",
+    interview: "",
+    listStyle: "",
+    backup: "",
+    folio: "",
+    campus: "",
+    hours: "",
+    dwelling: "",
+    payday: "",
+    mentor: "",
+    oldFriends: "",
+    sideQuest: "",
+    sunday: "",
   };
 }
 
@@ -127,16 +143,29 @@ export function createRun(pace: Pace, lang: RunState["lang"]): RunState {
   };
 }
 
+export function visibleLife(pace: Pace): Beat[] {
+  return LIFE_PLAYLIST.filter((beat) => pace === "standard" || beat.pace === "all");
+}
+
 function goAfter(run: RunState, fromSceneId: string): RunState {
   const list = visiblePlaylist(run.pace);
   const index = list.findIndex((beat) => beat.kind === "scene" && beat.id === fromSceneId);
-  if (index < 0) throw new Error(`Scene ${fromSceneId} is missing from the playlist`);
-  for (let i = index + 1; i < list.length; i += 1) {
-    const beat = list[i];
-    if (beat.kind === "electives") return { ...run, phase: "electives" };
-    if (beat.kind === "scene") return { ...run, phase: "scene", sceneId: beat.id };
+  if (index >= 0) {
+    for (let i = index + 1; i < list.length; i += 1) {
+      const beat = list[i];
+      if (beat.kind === "electives") return { ...run, phase: "electives" };
+      if (beat.kind === "scene") return { ...run, phase: "scene", sceneId: beat.id };
+    }
+    return { ...run, phase: "ranking" };
   }
-  return { ...run, phase: "ranking" };
+  const life = visibleLife(run.pace);
+  const lifeIndex = life.findIndex((beat) => beat.kind === "scene" && beat.id === fromSceneId);
+  if (lifeIndex >= 0) {
+    const next = life[lifeIndex + 1];
+    if (next?.kind === "scene") return { ...run, phase: "scene", sceneId: next.id };
+    return { ...run, phase: "epilogue", lastEcho: null, lastEffects: null };
+  }
+  throw new Error(`Scene ${fromSceneId} is missing from the playlist`);
 }
 
 export function applyChoice(run: RunState, choiceId: string): RunState {
@@ -234,6 +263,26 @@ export function programmeScore(run: RunState, programme: Programme): number {
   }
   if (run.flags.cca === "service" && (programme.boost === "policy" || programme.boost === "teaching")) score += 2;
   if (run.flags.miniProject && (programme.boost === "science" || programme.boost === "humanities")) score += 1;
+  if (run.flags.reference === "full") score += 2;
+  else if (run.flags.reference === "careful") score += 1;
+  if (run.flags.slp === "thick") score += 2;
+  else if (run.flags.slp === "honest") score += 1;
+  if (run.flags.folio === "start") score += 1;
+  if (run.flags.interview === "drill") score += 2;
+  else if (
+    run.flags.interview === "story" &&
+    (programme.boost === "policy" ||
+      programme.boost === "teaching" ||
+      programme.boost === "business" ||
+      programme.boost === "design" ||
+      programme.boost === "media" ||
+      programme.boost === "humanities")
+  ) {
+    score += 2;
+  } else if (run.flags.interview === "skip") score -= 1;
+  if (run.flags.listStyle === "safe") score += 1;
+  if (run.flags.listStyle === "reach" && programme.threshold >= 90) score += 2;
+  if (run.flags.listStyle === "advice" && (programme.boost === "teaching" || programme.boost === "policy")) score += 1;
   if (programme.adjust) score += programme.adjust(run);
   return clamp(score);
 }
@@ -295,7 +344,13 @@ export function confirmRanking(run: RunState, ranking: string[]): RunState {
 }
 
 export function advancePhase(run: RunState): RunState {
-  if (run.phase === "offer") return { ...run, phase: "epilogue" };
+  if (run.phase === "offer") {
+    const firstLife = visibleLife(run.pace).find((beat) => beat.kind === "scene");
+    if (firstLife && firstLife.kind === "scene") {
+      return { ...run, phase: "scene", sceneId: firstLife.id, lastEcho: null, lastEffects: null };
+    }
+    return { ...run, phase: "epilogue" };
+  }
   if (run.phase === "epilogue") return { ...run, phase: "summary" };
   throw new Error(`Cannot advance from ${run.phase}`);
 }
@@ -331,7 +386,15 @@ export function currentStep(run: RunState): StepId {
   if (run.phase === "ranking" || run.phase === "offer" || run.phase === "epilogue" || run.phase === "summary") {
     return "out";
   }
-  return SCENE_STEP[run.sceneId] ?? "S1";
+  if (SCENE_STEP[run.sceneId]) return SCENE_STEP[run.sceneId];
+  const scene = sceneById(run.sceneId);
+  if (!scene) return "S1";
+  if (scene.year === "life" || scene.id.startsWith("life-")) return "out";
+  if (scene.id.startsWith("s3b-")) return "sum";
+  if (scene.year === "S1" || scene.year === "S2" || scene.year === "S3" || scene.year === "S4" || scene.year === "S5" || scene.year === "S6") {
+    return scene.year;
+  }
+  return "S1";
 }
 
 export function progress(run: RunState): { id: StepId; status: StepStatus }[] {
