@@ -7,11 +7,13 @@ import { programmeById, PROGRAMMES } from "@/content/programmes";
 import {
   comboNote,
   ELECTIVES,
+  electiveDilemmas,
   electiveIntro,
   joinElectives,
   MATHS,
   mathLabel,
   PRESETS,
+  type Dilemma,
 } from "@/content/subjects";
 import {
   advancePhase,
@@ -29,7 +31,7 @@ import {
 import { clearRun, loadLang, loadRun, saveLang, saveRun } from "@/lib/storage";
 import { tx } from "@/lib/text";
 import type { ElectiveId, Lang, MathModule, Pace, RunState } from "@/lib/types";
-import { continueBlurb, EffectLine, LangToggle, StatMeters, Stepper, TideArt } from "@/components/widgets";
+import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, StatMeters, Stepper, TideArt } from "@/components/widgets";
 
 export function GameApp() {
   const [ready, setReady] = useState(false);
@@ -40,6 +42,7 @@ export function GameApp() {
   const [confirmNew, setConfirmNew] = useState(false);
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [blocked, setBlocked] = useState(false);
+  const [dilemmas, setDilemmas] = useState<Dilemma[] | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const lang = run?.lang ?? titleLang;
 
@@ -82,6 +85,7 @@ export function GameApp() {
     setConfirmNew(false);
     setConfirmRestart(false);
     setBlocked(false);
+    setDilemmas(null);
   }
 
   function restart() {
@@ -91,6 +95,28 @@ export function GameApp() {
     setConfirmRestart(false);
     setConfirmNew(false);
     setBlocked(false);
+    setDilemmas(null);
+  }
+
+  function clearDilemmas() {
+    setDilemmas(null);
+  }
+
+  function requestElectives() {
+    if (!run || run.electives.length !== 3) return;
+    const found = electiveDilemmas(run.abilities, run.electives);
+    if (found.length === 0) {
+      setDilemmas(null);
+      setRun(confirmElectives(run, run.electives, run.mathModule));
+      return;
+    }
+    setDilemmas(found);
+  }
+
+  function insistElectives() {
+    if (!run || run.electives.length !== 3) return;
+    setDilemmas(null);
+    setRun(confirmElectives(run, run.electives, run.mathModule));
   }
 
   if (!ready) {
@@ -127,7 +153,9 @@ export function GameApp() {
                   lang={lang}
                   blocked={blocked}
                   headingRef={headingRef}
+                  dilemmas={dilemmas}
                   onToggle={(id) => {
+                    clearDilemmas();
                     if (run.electives.includes(id)) {
                       setBlocked(false);
                       setRun(setElectiveDraft(run, run.electives.filter((item) => item !== id), run.mathModule));
@@ -141,13 +169,17 @@ export function GameApp() {
                     setRun(setElectiveDraft(run, [...run.electives, id], run.mathModule));
                   }}
                   onPreset={(ids, math) => {
+                    clearDilemmas();
                     setBlocked(false);
                     setRun(setElectiveDraft(run, [...ids], math));
                   }}
-                  onMath={(math) => setRun(setElectiveDraft(run, run.electives, math))}
-                  onConfirm={() => {
-                    if (run.electives.length === 3) setRun(confirmElectives(run, run.electives, run.mathModule));
+                  onMath={(math) => {
+                    clearDilemmas();
+                    setRun(setElectiveDraft(run, run.electives, math));
                   }}
+                  onConfirm={requestElectives}
+                  onInsist={insistElectives}
+                  onRevise={clearDilemmas}
                 />
               ) : null}
               {run.phase === "ranking" ? (
@@ -332,6 +364,7 @@ function SceneCard({
         {tx(lang, copy.focusLabel)} · {tx(lang, view.focus)}
       </p>
       {run.lastEcho ? <p className="echo">{tx(lang, copy.lastChoice)}{tx(lang, run.lastEcho)}</p> : null}
+      <AbilityEcho delta={run.lastAbilities} lang={lang} banner />
       {run.log.length === 0 ? <p className="hint">{tx(lang, copy.firstHint)}</p> : null}
       <p className="prose">{tx(lang, view.body)}</p>
       <div className="choices">
@@ -339,6 +372,7 @@ function SceneCard({
           <button key={choice.id} type="button" className="choice" data-testid={`choice-${choice.id}`} onClick={() => onChoose(choice.id)}>
             <span className="label">{tx(lang, choice.label)}</span>
             <span className="detail">{tx(lang, choice.detail)}</span>
+            <AbilityEcho delta={choice.ability} lang={lang} />
             <EffectLine effects={choice.effects} lang={lang} />
           </button>
         ))}
@@ -352,21 +386,31 @@ function ElectiveCard({
   lang,
   blocked,
   headingRef,
+  dilemmas,
   onToggle,
   onPreset,
   onMath,
   onConfirm,
+  onInsist,
+  onRevise,
 }: {
   run: RunState;
   lang: Lang;
   blocked: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
+  dilemmas: Dilemma[] | null;
   onToggle: (id: ElectiveId) => void;
   onPreset: (ids: ElectiveId[], math: MathModule) => void;
   onMath: (math: MathModule) => void;
   onConfirm: () => void;
+  onInsist: () => void;
+  onRevise: () => void;
 }) {
   const note = comboNote(run.electives, run.mathModule, lang);
+  const dilemmaRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (dilemmas && dilemmas.length > 0) dilemmaRef.current?.focus();
+  }, [dilemmas]);
   return (
     <article className="card">
       <p className="kicker">{tx(lang, copy.electiveKicker)}</p>
@@ -377,56 +421,89 @@ function ElectiveCard({
         {tx(lang, copy.focusLabel)} · {tx(lang, copy.electiveFocus)}
       </p>
       {run.lastEcho ? <p className="echo">{tx(lang, copy.lastChoice)}{tx(lang, run.lastEcho)}</p> : null}
+      <AbilityEcho delta={run.lastAbilities} lang={lang} banner />
       <p className="prose">{electiveIntro(run.flags, lang)}</p>
-      <h2>{tx(lang, copy.presets)}</h2>
-      <div className="presets">
-        {PRESETS.map((preset) => (
-          <button key={preset.id} type="button" className="preset" onClick={() => onPreset(preset.electives, preset.math)}>
-            {tx(lang, preset.label)}
-          </button>
-        ))}
-      </div>
-      <h2>
-        {tx(lang, copy.selected)} {run.electives.length}/3
-      </h2>
-      <div className="subjects">
-        {ELECTIVES.map((item) => {
-          const selected = run.electives.includes(item.id);
-          return (
-            <button
-              key={item.id}
-              type="button"
-              className="subject"
-              aria-pressed={selected}
-              data-testid={`elective-${item.id}`}
-              onClick={() => onToggle(item.id)}
-            >
-              <strong>{tx(lang, item.name)}</strong>
-              <small>{tx(lang, item.hint)}</small>
+      <div className="elective-layout">
+        <div className="ability-board-wrap">
+          <h2>{tx(lang, copy.abilityBoard)}</h2>
+          <p className="note">{tx(lang, copy.abilityScale)}</p>
+          <AbilityBoard abilities={run.abilities} picked={run.electives} lang={lang} />
+          <p className="note">{tx(lang, copy.abilityLegend)}</p>
+        </div>
+        <div>
+          <h2>{tx(lang, copy.presets)}</h2>
+          <div className="presets">
+            {PRESETS.map((preset) => (
+              <button key={preset.id} type="button" className="preset" onClick={() => onPreset(preset.electives, preset.math)}>
+                {tx(lang, preset.label)}
+              </button>
+            ))}
+          </div>
+          <h2>
+            {tx(lang, copy.selected)} {run.electives.length}/3
+          </h2>
+          <div className="subjects">
+            {ELECTIVES.map((item) => {
+              const selected = run.electives.includes(item.id);
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  className="subject"
+                  aria-pressed={selected}
+                  data-testid={`elective-${item.id}`}
+                  onClick={() => onToggle(item.id)}
+                >
+                  <strong>{tx(lang, item.name)}</strong>
+                  <small>
+                    {tx(lang, copy.abilityOf)} {run.abilities[item.id]}/10 · {tx(lang, item.hint)}
+                  </small>
+                </button>
+              );
+            })}
+          </div>
+          {blocked ? <p className="note">{tx(lang, copy.electiveFull)}</p> : null}
+          {run.electives.length > 0 && run.electives.length < 3 ? <p className="note">{tx(lang, copy.needThree)}</p> : null}
+          {note ? <p className="note">{note}</p> : null}
+          <h2>{tx(lang, copy.mathLegend)}</h2>
+          <div className="maths" role="radiogroup" aria-label={tx(lang, copy.mathLegend)}>
+            {MATHS.map((item) => (
+              <label key={item.id}>
+                <input
+                  type="radio"
+                  name="math"
+                  checked={run.mathModule === item.id}
+                  onChange={() => onMath(item.id)}
+                />
+                <span>{tx(lang, item.short)}</span>
+              </label>
+            ))}
+          </div>
+          {dilemmas && dilemmas.length > 0 ? (
+            <div className="confirm dilemmas" data-testid="dilemmas" role="region" aria-label={tx(lang, copy.dilemmaTitle)}>
+              <h2 ref={dilemmaRef} tabIndex={-1}>
+                {tx(lang, copy.dilemmaTitle)}
+              </h2>
+              <p className="note">{tx(lang, copy.dilemmaNote)}</p>
+              {dilemmas.map((item) => (
+                <p key={item.id} className="dilemma" data-testid={`dilemma-${item.id}`}>
+                  {tx(lang, item.text)}
+                </p>
+              ))}
+              <button type="button" className="primary" data-testid="insist-electives" onClick={onInsist}>
+                {tx(lang, copy.insistElectives)}
+              </button>
+              <button type="button" className="ghost" data-testid="revise-electives" onClick={onRevise}>
+                {tx(lang, copy.reviseElectives)}
+              </button>
+            </div>
+          ) : (
+            <button type="button" className="primary" data-testid="confirm-electives" disabled={run.electives.length !== 3} onClick={onConfirm}>
+              {tx(lang, copy.confirmElectives)}
             </button>
-          );
-        })}
+          )}
+        </div>
       </div>
-      {blocked ? <p className="note">{tx(lang, copy.electiveFull)}</p> : null}
-      {run.electives.length > 0 && run.electives.length < 3 ? <p className="note">{tx(lang, copy.needThree)}</p> : null}
-      {note ? <p className="note">{note}</p> : null}
-      <h2>{tx(lang, copy.mathLegend)}</h2>
-      <div className="maths" role="radiogroup" aria-label={tx(lang, copy.mathLegend)}>
-        {MATHS.map((item) => (
-          <label key={item.id}>
-            <input
-              type="radio"
-              name="math"
-              checked={run.mathModule === item.id}
-              onChange={() => onMath(item.id)}
-            />
-            <span>{tx(lang, item.short)}</span>
-          </label>
-        ))}
-      </div>
-      <button type="button" className="primary" data-testid="confirm-electives" disabled={run.electives.length !== 3} onClick={onConfirm}>
-        {tx(lang, copy.confirmElectives)}
-      </button>
     </article>
   );
 }
@@ -477,6 +554,7 @@ function RankingCard({
         {" · "}
         {tx(lang, copy.notExam)}
       </p>
+      <p className="note">{tx(lang, copy.abilityIndex)}</p>
       <h2>{tx(lang, copy.yourList)}</h2>
       {run.ranking.length === 0 ? <p className="note">{tx(lang, copy.emptyList)}</p> : null}
       <ol className="rank">
@@ -656,6 +734,8 @@ function SummaryCard({
         {mathLabel(run.mathModule, lang)}
       </p>
       <p className="note">{tx(lang, copy.coreReminder)}</p>
+      <h2>{tx(lang, copy.abilityBoard)}</h2>
+      <AbilityBoard abilities={run.abilities} picked={run.electives} lang={lang} />
       <h2>{tx(lang, copy.outcomeHeading)}</h2>
       <p>{offer.headline}</p>
       <h2>{tx(lang, copy.pathHeading)}</h2>

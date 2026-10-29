@@ -30,12 +30,19 @@ export type ElectiveId =
   | "chem"
   | "bio"
   | "econ"
-  | "geog"
+  | "bafs"
   | "hist"
   | "chist"
+  | "geog"
   | "va"
   | "ict"
-  | "bafs";
+  | "pe";
+
+export type CoreId = "chi" | "eng" | "math" | "cs";
+
+export type SubjectId = CoreId | ElectiveId;
+
+export type Abilities = Record<SubjectId, number>;
 
 export type MathModule = "none" | "m1" | "m2";
 
@@ -120,6 +127,7 @@ export type RunState = {
   phase: Phase;
   sceneId: string;
   stats: Stats;
+  abilities: Abilities;
   electives: ElectiveId[];
   mathModule: MathModule;
   flags: Flags;
@@ -130,10 +138,12 @@ export type RunState = {
   passedOver: string[];
   lastEcho: LocaleText | null;
   lastEffects: Partial<Stats> | null;
+  lastAbilities: Partial<Abilities> | null;
 };
 
 export type SceneCtx = {
   stats: Stats;
+  abilities: Abilities;
   electives: ElectiveId[];
   mathModule: MathModule;
   flags: Flags;
@@ -145,6 +155,7 @@ export type Choice = {
   label: LocaleText;
   detail: LocaleText;
   effects: Partial<Stats>;
+  ability?: Partial<Abilities>;
   flags?: Partial<Flags>;
   after?: (run: RunState, stats: Stats) => Partial<Flags>;
 };

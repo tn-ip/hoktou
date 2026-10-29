@@ -2,11 +2,22 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { copy } from "@/content/copy";
 import { endingView, offerView } from "@/content/endings";
-import { PROGRAMMES } from "@/content/programmes";
+import { PROGRAMMES, programmeById } from "@/content/programmes";
 import { EXTRA_SCENE_IDS } from "@/content/decisions";
 import { LIFE_PLAYLIST, PLAYLIST, SCENES, sceneById } from "@/content/scenes";
-import { ELECTIVES, PRESETS } from "@/content/subjects";
+import { ABILITY_SCENE_IDS } from "@/content/ability-scenes";
 import {
+  abilityDeltaLine,
+  applyAbilityDelta,
+  CORE_SUBJECTS,
+  ELECTIVES,
+  electiveDilemmas,
+  PRESETS,
+  startAbilities,
+  SUBJECT_IDS,
+} from "@/content/subjects";
+import {
+  abilityLift,
   advancePhase,
   applyChoice,
   applyEffects,
@@ -14,13 +25,14 @@ import {
   confirmElectives,
   confirmRanking,
   createRun,
+  programmeScore,
   rankTarget,
   sceneView,
   defaultFlags,
   START_STATS,
 } from "@/lib/engine";
 import { parseRun } from "@/lib/storage";
-import type { ElectiveId, Lang, MathModule, Pace, RunState, SceneCtx } from "@/lib/types";
+import type { Abilities, ElectiveId, Lang, MathModule, Pace, RunState, SceneCtx } from "@/lib/types";
 
 const BAD_ZH = /[国学门东车这对后发经时个为来还么样头电点问书长万与无现课业选历实习级语开关动见贝页风飞马鸟鱼麦黄广产义云优会仅从众]/u;
 
@@ -42,6 +54,7 @@ function walkLocale(value: unknown, visit: (text: string, lang: Lang, path: stri
 function sampleContexts(): SceneCtx[] {
   const base: SceneCtx = {
     stats: { ...START_STATS },
+    abilities: startAbilities(),
     electives: [],
     mathModule: "none",
     flags: defaultFlags(),
@@ -68,6 +81,11 @@ function sampleContexts(): SceneCtx[] {
       ...base,
       electives: ["phy", "chem", "bio"],
       stats: { academic: 80, curiosity: 80, wellbeing: 80, social: 80 },
+    },
+    {
+      ...base,
+      electives: ["chem", "econ", "geog"],
+      abilities: { ...startAbilities(), chem: 3, math: 3, va: 6, phy: 8, eng: 9 },
     },
   ];
 }
@@ -136,7 +154,7 @@ describe("hoktou loop", () => {
   });
 
   it("writes traditional Chinese and English for the static catalogue", () => {
-    const bags = [copy, ELECTIVES, PRESETS, PROGRAMMES, SCENES];
+    const bags = [copy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES];
     for (const bag of bags) {
       walkLocale(bag, (text, lang, path) => {
         assert.ok(text.trim().length > 0, path);
@@ -358,6 +376,88 @@ describe("hoktou loop", () => {
     );
     assert.match(sceneViewAt(arts, "s5-showcase"), /口述/);
     assert.equal(arts.offerId, "lion-hist");
+  });
+
+  it("tracks subject abilities from 1 to 10 and shows the feedback line", () => {
+    const start = startAbilities();
+    assert.equal(SUBJECT_IDS.length, 15);
+    assert.deepEqual(Object.values(start), Array(15).fill(5));
+    const topped = applyAbilityDelta({ ...start, math: 10 }, { math: 2 });
+    const floored = applyAbilityDelta({ ...start, pe: 1 }, { pe: -2 });
+    assert.equal(topped.math, 10);
+    assert.equal(floored.pe, 1);
+    let run = createRun("standard", "zh");
+    run = { ...run, sceneId: "s1-ab-olympiad", phase: "scene" };
+    run = applyChoice(run, "s1-ab-olympiad-go");
+    assert.equal(run.abilities.math, 6);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +1");
+    run = { ...run, sceneId: "s2-ab-profit", phase: "scene" };
+    run = applyChoice(run, "s2-ab-profit-work");
+    assert.equal(run.abilities.math, 8);
+    assert.equal(run.abilities.bafs, 6);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +2、BAFS能力 +1");
+    const ordered = PLAYLIST.flatMap((beat) => (beat.kind === "scene" ? [beat.id] : []));
+    const positions = ABILITY_SCENE_IDS.map((id) => ordered.indexOf(id));
+    assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
+    assert.ok(positions[0] > ordered.indexOf("s1-arrival"));
+    const electiveAt = PLAYLIST.findIndex((beat) => beat.kind === "electives");
+    assert.ok(positions[positions.length - 1] < electiveAt);
+    for (const id of ABILITY_SCENE_IDS) {
+      const scene = sceneById(id);
+      assert.equal(scene?.choices(sampleContexts()[0]).length, 2);
+      assert.equal(PLAYLIST.find((beat) => beat.kind === "scene" && beat.id === id && beat.pace === "all"), undefined);
+    }
+    assert.equal(ABILITY_SCENE_IDS.length, 16);
+  });
+
+  it("warns on confirm and still accepts the mix", () => {
+    const base = startAbilities();
+    const weakChem: Abilities = { ...base, chem: 4 };
+    const gap = electiveDilemmas(weakChem, ["chem", "hist", "geog"]);
+    assert.deepEqual(gap.map((item) => item.id), ["gap-chem"]);
+    assert.equal(gap[0]?.text.zh, "化學呢科你而家一般啲 — 之後跟堂可能會吃力少少。你仲想堅持，定係想再諗吓？");
+
+    const two = electiveDilemmas(base, ["phy", "chem", "geog"]);
+    assert.equal(two[0]?.text.zh, "你揀咗兩科科學。實驗同溫習會忙啲，時間要分配得好。");
+    const three = electiveDilemmas(base, ["phy", "chem", "bio"]);
+    assert.match(three[0]?.text.zh ?? "", /三科科學/);
+
+    const biz = electiveDilemmas({ ...base, math: 4 }, ["econ", "bafs", "geog"]);
+    assert.equal(biz.find((item) => item.id === "biz-math")?.text.zh, "經濟／BAFS 好多時要用到數學。你數學暫時弱啲，計數題要預多啲時間。");
+
+    const art = electiveDilemmas({ ...base, va: 6 }, ["econ", "bafs", "geog"]);
+    assert.equal(art.find((item) => item.id === "art-path")?.text.zh, "你視藝唔錯，不過而家組合偏第二邊。家長可能會問出路，你準備點同佢哋傾？");
+    assert.equal(electiveDilemmas({ ...base, va: 6 }, ["va", "ict", "econ"]).some((item) => item.id === "art-path"), false);
+
+    const both = electiveDilemmas({ ...base, math: 7, phy: 7 }, ["hist", "geog", "va"]);
+    assert.equal(both.find((item) => item.id === "unused-strength")?.text.zh, "你數學／物理其實幾穩，但未入到組合。想唔想再考慮吓理科？");
+    const phyOnly = electiveDilemmas({ ...base, phy: 8 }, ["chem", "bio", "geog"]);
+    assert.match(phyOnly.find((item) => item.id === "unused-strength")?.text.zh ?? "", /^你物理其實幾穩/);
+    assert.equal(electiveDilemmas({ ...base, math: 9, phy: 9 }, ["phy", "chem", "bio"]).some((item) => item.id === "unused-strength"), false);
+    assert.equal(electiveDilemmas(base, ["econ", "geog", "hist"]).length, 0);
+
+    let run = createRun("fast", "zh");
+    while (run.phase === "scene") run = applyChoice(run, choiceIds(run)[0]);
+    assert.equal(run.phase, "electives");
+    run = confirmElectives(run, ["chem", "hist", "geog"], "none");
+    assert.equal(run.phase, "scene");
+    assert.deepEqual(run.electives, ["chem", "hist", "geog"]);
+  });
+
+  it("keeps a neutral ability board from changing the game index", () => {
+    const run = createRun("fast", "zh");
+    run.electives = ["phy", "chem", "bio"];
+    run.mathModule = "m2";
+    const programme = programmeById("monghoi-phy");
+    assert.ok(programme);
+    const neutral = programmeScore(run, programme);
+    assert.equal(abilityLift(run, programme), 0);
+    const strong = programmeScore(
+      { ...run, abilities: { ...run.abilities, phy: 10, math: 8, chi: 7, eng: 7 } },
+      programme,
+    );
+    assert.ok(strong > neutral);
+    assert.equal(parseRun({ ...JSON.parse(JSON.stringify(run)), abilities: undefined, lastAbilities: undefined })?.abilities.math, 5);
   });
 });
 

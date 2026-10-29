@@ -1,6 +1,6 @@
 import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
 import { PROGRAMMES, programmeById, type Programme } from "@/content/programmes";
-import { joinElectives, mathLabel } from "@/content/subjects";
+import { applyAbilityDelta, joinElectives, mathLabel, startAbilities } from "@/content/subjects";
 import { fairAligns, projectTrack } from "@/lib/track";
 import type {
   Choice,
@@ -88,6 +88,7 @@ export function visiblePlaylist(pace: Pace): Beat[] {
 function toCtx(run: RunState): SceneCtx {
   return {
     stats: run.stats,
+    abilities: run.abilities ?? startAbilities(),
     electives: run.electives,
     mathModule: run.mathModule,
     flags: run.flags,
@@ -130,6 +131,7 @@ export function createRun(pace: Pace, lang: RunState["lang"]): RunState {
     phase: "scene",
     sceneId: first.id,
     stats: { ...START_STATS },
+    abilities: startAbilities(),
     electives: [],
     mathModule: "none",
     flags: defaultFlags(),
@@ -140,6 +142,7 @@ export function createRun(pace: Pace, lang: RunState["lang"]): RunState {
     passedOver: [],
     lastEcho: null,
     lastEffects: null,
+    lastAbilities: null,
   };
 }
 
@@ -163,7 +166,7 @@ function goAfter(run: RunState, fromSceneId: string): RunState {
   if (lifeIndex >= 0) {
     const next = life[lifeIndex + 1];
     if (next?.kind === "scene") return { ...run, phase: "scene", sceneId: next.id };
-    return { ...run, phase: "epilogue", lastEcho: null, lastEffects: null };
+    return { ...run, phase: "epilogue", lastEcho: null, lastEffects: null, lastAbilities: null };
   }
   throw new Error(`Scene ${fromSceneId} is missing from the playlist`);
 }
@@ -176,15 +179,18 @@ export function applyChoice(run: RunState, choiceId: string): RunState {
   const choice = scene.choices(ctx).find((item) => item.id === choiceId);
   if (!choice) throw new Error(`Unknown choice ${choiceId}`);
   const stats = applyEffects(run.stats, choice.effects);
-  const drafted: RunState = { ...run, stats };
+  const abilities = applyAbilityDelta(run.abilities ?? startAbilities(), choice.ability);
+  const drafted: RunState = { ...run, stats, abilities };
   const extra = choice.after?.(drafted, stats) ?? {};
   const flags = { ...run.flags, ...(choice.flags ?? {}), ...extra };
   const next: RunState = {
     ...run,
     stats,
+    abilities,
     flags,
     lastEcho: choice.label,
     lastEffects: choice.effects,
+    lastAbilities: choice.ability ?? null,
     log: [
       ...run.log,
       {
@@ -212,6 +218,7 @@ export function confirmElectives(run: RunState, electives: ElectiveId[], mathMod
     mathModule,
     lastEcho: null,
     lastEffects: null,
+    lastAbilities: null,
     log: [
       ...run.log,
       {
@@ -284,7 +291,25 @@ export function programmeScore(run: RunState, programme: Programme): number {
   if (run.flags.listStyle === "reach" && programme.threshold >= 90) score += 2;
   if (run.flags.listStyle === "advice" && (programme.boost === "teaching" || programme.boost === "policy")) score += 1;
   if (programme.adjust) score += programme.adjust(run);
+  score += abilityLift(run, programme);
   return clamp(score);
+}
+
+const MATH_BOOSTS = new Set(["science", "medicine", "engineering", "business", "accounting"]);
+const CS_BOOSTS = new Set(["policy", "humanities", "teaching"]);
+
+export function abilityLift(run: Pick<RunState, "abilities" | "electives">, programme: Programme): number {
+  const abilities = run.abilities ?? startAbilities();
+  let lift = 0;
+  for (const id of programme.electives) {
+    if (!run.electives.includes(id)) continue;
+    lift += (abilities[id] ?? 5) - 5;
+  }
+  if (run.electives.includes("pe") && programme.boost === "teaching") lift += (abilities.pe ?? 5) - 5;
+  if (programme.math || MATH_BOOSTS.has(programme.boost)) lift += (abilities.math ?? 5) - 5;
+  if (CS_BOOSTS.has(programme.boost)) lift += (abilities.cs ?? 5) - 5;
+  lift += Math.round((((abilities.chi ?? 5) - 5) + ((abilities.eng ?? 5) - 5)) / 2);
+  return Math.max(-12, Math.min(12, lift));
 }
 
 export function outlookOf(run: RunState, programme: Programme): Outlook {
@@ -340,6 +365,7 @@ export function confirmRanking(run: RunState, ranking: string[]): RunState {
     phase: "offer",
     lastEcho: null,
     lastEffects: null,
+    lastAbilities: null,
   };
 }
 
@@ -347,7 +373,7 @@ export function advancePhase(run: RunState): RunState {
   if (run.phase === "offer") {
     const firstLife = visibleLife(run.pace).find((beat) => beat.kind === "scene");
     if (firstLife && firstLife.kind === "scene") {
-      return { ...run, phase: "scene", sceneId: firstLife.id, lastEcho: null, lastEffects: null };
+      return { ...run, phase: "scene", sceneId: firstLife.id, lastEcho: null, lastEffects: null, lastAbilities: null };
     }
     return { ...run, phase: "epilogue" };
   }

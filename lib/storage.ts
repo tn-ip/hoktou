@@ -1,8 +1,9 @@
 import { sceneById } from "@/content/scenes";
 import { programmeById } from "@/content/programmes";
-import { ELECTIVE_IDS } from "@/content/subjects";
+import { ELECTIVE_IDS, readAbilities, SUBJECT_IDS } from "@/content/subjects";
 import { defaultFlags } from "@/lib/engine";
 import type {
+  Abilities,
   ElectiveId,
   Flags,
   Lang,
@@ -12,6 +13,7 @@ import type {
   Phase,
   RunState,
   Stats,
+  SubjectId,
 } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
 
@@ -112,6 +114,7 @@ export function parseRun(raw: unknown): RunState | null {
     phase: value.phase,
     sceneId,
     stats,
+    abilities: readAbilities(value.abilities),
     electives,
     mathModule,
     flags: readFlags(value.flags),
@@ -123,8 +126,23 @@ export function parseRun(raw: unknown): RunState | null {
     lastEcho: isLocale(value.lastEcho) ? value.lastEcho : null,
     lastEffects:
       value.lastEffects && typeof value.lastEffects === "object" ? (value.lastEffects as Partial<Stats>) : null,
+    lastAbilities: readAbilityDelta(value.lastAbilities),
   };
   return run;
+}
+
+function readAbilityDelta(value: unknown): Partial<Abilities> | null {
+  if (!value || typeof value !== "object") return null;
+  const record = value as Partial<Record<SubjectId, unknown>>;
+  const delta: Partial<Abilities> = {};
+  let any = false;
+  for (const id of SUBJECT_IDS) {
+    const score = record[id];
+    if (typeof score !== "number" || Number.isNaN(score)) continue;
+    delta[id] = Math.round(score);
+    any = true;
+  }
+  return any ? delta : null;
 }
 
 function storage(): Storage | null {

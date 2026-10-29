@@ -1,7 +1,15 @@
 import { copy } from "@/content/copy";
+import {
+  abilityBand,
+  abilityBandLabel,
+  abilityDeltaLine,
+  CORE_SUBJECTS,
+  ELECTIVES,
+  subjectName,
+} from "@/content/subjects";
 import { currentStep, progress } from "@/lib/engine";
 import { statLabel, tx } from "@/lib/text";
-import type { Lang, LocaleText, RunState, StatKey, Stats } from "@/lib/types";
+import type { Abilities, ElectiveId, Lang, LocaleText, RunState, StatKey, Stats, SubjectId } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
 
 export function LangToggle({ lang, onChange }: { lang: Lang; onChange: (lang: Lang) => void }) {
@@ -13,6 +21,98 @@ export function LangToggle({ lang, onChange }: { lang: Lang; onChange: (lang: La
       <button type="button" aria-pressed={lang === "en"} data-testid="lang-en" onClick={() => onChange("en")}>
         EN
       </button>
+    </div>
+  );
+}
+
+export function AbilityEcho({
+  delta,
+  lang,
+  banner = false,
+}: {
+  delta: Partial<Abilities> | null | undefined;
+  lang: Lang;
+  banner?: boolean;
+}) {
+  const text = abilityDeltaLine(delta, lang);
+  if (!text) return null;
+  const shown = lang === "zh" ? `「${text}」` : text;
+  if (banner) {
+    return (
+      <p className="ability-feedback" data-testid="ability-feedback">
+        {shown}
+      </p>
+    );
+  }
+  return <span className="ability-echo">{shown}</span>;
+}
+
+function AbilityCell({
+  id,
+  abilities,
+  picked,
+  lang,
+}: {
+  id: SubjectId;
+  abilities: Abilities;
+  picked: boolean;
+  lang: Lang;
+}) {
+  const score = abilities[id];
+  const band = abilityBand(score);
+  const name = subjectName(id, lang, "name");
+  const short = subjectName(id, lang, "short");
+  return (
+    <div
+      className={`ability-cell ${band}${picked ? " picked" : ""}`}
+      data-testid={`ability-${id}`}
+      data-score={score}
+    >
+      <div className="ability-top">
+        <strong>{short}</strong>
+        <span className="score">
+          {score}
+          <small>/10</small>
+        </span>
+      </div>
+      {name !== short ? <span className="ability-full">{name}</span> : null}
+      <span className="ability-band">{abilityBandLabel(score, lang)}</span>
+      <div className="pips" aria-hidden="true">
+        {Array.from({ length: 10 }, (_, index) => (
+          <i key={index} className={index < score ? "on" : ""} />
+        ))}
+      </div>
+      <span className="sr">
+        {name} {score}/10 {abilityBandLabel(score, lang)}
+        {picked ? (lang === "zh" ? "，已選" : ", chosen") : ""}
+      </span>
+    </div>
+  );
+}
+
+export function AbilityBoard({
+  abilities,
+  picked,
+  lang,
+}: {
+  abilities: Abilities;
+  picked: ElectiveId[];
+  lang: Lang;
+}) {
+  return (
+    <div className="ability-board" data-testid="ability-board">
+      <h3>{tx(lang, copy.abilityCore)}</h3>
+      <div className="ability-grid">
+        {CORE_SUBJECTS.map((item) => (
+          <AbilityCell key={item.id} id={item.id} abilities={abilities} picked={false} lang={lang} />
+        ))}
+      </div>
+      <h3>{tx(lang, copy.abilityElective)}</h3>
+      <div className="ability-grid">
+        {ELECTIVES.map((item) => (
+          <AbilityCell key={item.id} id={item.id} abilities={abilities} picked={picked.includes(item.id)} lang={lang} />
+        ))}
+      </div>
     </div>
   );
 }

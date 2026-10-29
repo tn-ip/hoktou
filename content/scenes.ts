@@ -1,5 +1,6 @@
+import { ABILITY_SCENES } from "@/content/ability-scenes";
 import { EXTRA_SCENES } from "@/content/decisions";
-import { joinElectives } from "@/content/subjects";
+import { joinElectives, seniorAbilityNote } from "@/content/subjects";
 import { decideFair, projectTrack } from "@/lib/track";
 import type {
   Choice,
@@ -20,22 +21,38 @@ const standard = (id: string): Beat => ({ kind: "scene", id, pace: "standard" })
 
 export const PLAYLIST: Beat[] = [
   { kind: "scene", id: "s1-arrival", pace: "all" },
+  standard("s1-ab-olympiad"),
   standard("s1-recess"),
+  standard("s1-ab-labday"),
   standard("s1-english"),
+  standard("s1-ab-debate"),
+  standard("s1-ab-museum"),
   standard("s1-pe"),
+  standard("s1-ab-societies"),
   standard("s1-homework"),
+  standard("s1-ab-tutor"),
   { kind: "scene", id: "s1-quiz", pace: "standard" },
+  standard("s1-ab-geog"),
   standard("s1-library"),
+  standard("s1-ab-pe"),
   standard("s1-rain"),
   { kind: "scene", id: "s1-summer", pace: "standard" },
   { kind: "scene", id: "s2-clubs", pace: "all" },
+  standard("s2-ab-chem"),
   standard("s2-lab"),
+  standard("s2-ab-circuit"),
   standard("s2-phone"),
+  standard("s2-ab-bio"),
   standard("s2-group"),
+  standard("s2-ab-stem"),
   { kind: "scene", id: "s2-home", pace: "standard" },
+  standard("s2-ab-stall"),
   standard("s2-festival"),
+  standard("s2-ab-firm"),
   standard("s2-trial"),
+  standard("s2-ab-invest"),
   { kind: "scene", id: "s2-spring", pace: "standard" },
+  standard("s2-ab-profit"),
   standard("s2-sea"),
   { kind: "scene", id: "s3-crossroad", pace: "all" },
   standard("s3-taster"),
@@ -640,9 +657,10 @@ const BASE_SCENES: Scene[] = [
     body: (ctx) => {
       const math = mathSentence(ctx.mathModule);
       const friends = classLine(ctx.electives);
+      const note = seniorAbilityNote(ctx.abilities, ctx.electives);
       return line(
-        `高中第一天，選修換成${joinElectives(ctx.electives, "zh")}。${math.zh}${friends.zh}必修的中文、英文、數學同公民與社會發展仍在。你要決定這一學年把重心放在哪裡。`,
-        `On the first day of senior secondary your electives are ${joinElectives(ctx.electives, "en")}. ${math.en} ${friends.en} Chinese, English, mathematics, and Citizenship and Social Development are still there. You decide where this school year leans.`,
+        `高中第一天，選修換成${joinElectives(ctx.electives, "zh")}。${math.zh}${friends.zh}必修的中文、英文、數學同公民與社會發展仍在。你要決定這一學年把重心放在哪裡。${note.zh}`,
+        `On the first day of senior secondary your electives are ${joinElectives(ctx.electives, "en")}. ${math.en} ${friends.en} Chinese, English, mathematics, and Citizenship and Social Development are still there. You decide where this school year leans.${note.en ? ` ${note.en}` : ""}`,
       );
     },
     choices: () => [
@@ -851,7 +869,8 @@ const BASE_SCENES: Scene[] = [
       const extra = ctx.flags.heavyTutor
         ? line("補習很多，你開始分不清哪一頁是自己的。", "The tutorials have piled up. You are starting to lose track of which page is yours.")
         : line("", "");
-      return line(`${tone.zh}${extra.zh}`, `${tone.en} ${extra.en}`.trim());
+      const note = seniorAbilityNote(ctx.abilities, ctx.electives);
+      return line(`${tone.zh}${extra.zh}${note.zh}`, `${tone.en} ${extra.en} ${note.en}`.replace(/\s+/g, " ").trim());
     },
     choices: () => [
       {
@@ -914,7 +933,7 @@ const BASE_SCENES: Scene[] = [
   },
 ];
 
-export const SCENES: Scene[] = [...BASE_SCENES, ...EXTRA_SCENES];
+export const SCENES: Scene[] = [...BASE_SCENES, ...ABILITY_SCENES, ...EXTRA_SCENES];
 
 export function sceneById(id: string): Scene | undefined {
   return SCENES.find((scene) => scene.id === id);
