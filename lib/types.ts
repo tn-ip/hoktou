@@ -14,6 +14,27 @@ export type Phase =
 
 export type StatKey = "academic" | "curiosity" | "wellbeing" | "social";
 
+export type InterestId =
+  | "science"
+  | "humanities"
+  | "business"
+  | "art"
+  | "sport"
+  | "computer"
+  | "language"
+  | "service";
+
+export const INTEREST_IDS: InterestId[] = [
+  "science",
+  "humanities",
+  "business",
+  "art",
+  "sport",
+  "computer",
+  "language",
+  "service",
+];
+
 export const STAT_KEYS: StatKey[] = [
   "academic",
   "curiosity",
@@ -120,10 +141,17 @@ export type LogEntry = {
   choice: LocaleText;
 };
 
+export type StartProfile = {
+  nickname?: string;
+  interests?: InterestId[];
+};
+
 export type RunState = {
   version: 1;
   pace: Pace;
   lang: Lang;
+  nickname: string;
+  interests: InterestId[];
   phase: Phase;
   sceneId: string;
   stats: Stats;
@@ -157,6 +185,7 @@ export type Choice = {
   effects: Partial<Stats>;
   ability?: Partial<Abilities>;
   flags?: Partial<Flags>;
+  blocked?: LocaleText;
   after?: (run: RunState, stats: Stats) => Partial<Flags>;
 };
 

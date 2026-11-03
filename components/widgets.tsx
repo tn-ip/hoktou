@@ -7,7 +7,8 @@ import {
   ELECTIVES,
   subjectName,
 } from "@/content/subjects";
-import { currentStep, progress } from "@/lib/engine";
+import { currentStep, progress, statFeedbackLine } from "@/lib/engine";
+import { lifePoint } from "@/lib/gates";
 import { statLabel, tx } from "@/lib/text";
 import type { Abilities, ElectiveId, Lang, LocaleText, RunState, StatKey, Stats, SubjectId } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
@@ -47,15 +48,36 @@ export function AbilityEcho({
   return <span className="ability-echo">{shown}</span>;
 }
 
+export function StatFeedback({
+  effects,
+  stats,
+  lang,
+}: {
+  effects: Partial<Stats> | null | undefined;
+  stats: Stats;
+  lang: Lang;
+}) {
+  const text = statFeedbackLine(effects, stats, lang);
+  if (!text) return null;
+  const shown = lang === "zh" ? `「${text}」` : text;
+  return (
+    <p className="stat-feedback" data-testid="stat-feedback">
+      {shown}
+    </p>
+  );
+}
+
 function AbilityCell({
   id,
   abilities,
   picked,
+  recommended,
   lang,
 }: {
   id: SubjectId;
   abilities: Abilities;
   picked: boolean;
+  recommended: boolean;
   lang: Lang;
 }) {
   const score = abilities[id];
@@ -64,12 +86,16 @@ function AbilityCell({
   const short = subjectName(id, lang, "short");
   return (
     <div
-      className={`ability-cell ${band}${picked ? " picked" : ""}`}
+      className={`ability-cell ${band}${picked ? " picked" : ""}${recommended ? " recommended" : ""}`}
       data-testid={`ability-${id}`}
       data-score={score}
+      data-recommended={recommended ? "yes" : "no"}
     >
       <div className="ability-top">
-        <strong>{short}</strong>
+        <strong>
+          {short}
+          {recommended ? <span className="recommend-badge">{tx(lang, copy.suggestedBadge)}</span> : null}
+        </strong>
         <span className="score">
           {score}
           <small>/10</small>
@@ -94,23 +120,32 @@ export function AbilityBoard({
   abilities,
   picked,
   lang,
+  recommended = [],
 }: {
   abilities: Abilities;
   picked: ElectiveId[];
   lang: Lang;
+  recommended?: ElectiveId[];
 }) {
   return (
     <div className="ability-board" data-testid="ability-board">
       <h3>{tx(lang, copy.abilityCore)}</h3>
       <div className="ability-grid">
         {CORE_SUBJECTS.map((item) => (
-          <AbilityCell key={item.id} id={item.id} abilities={abilities} picked={false} lang={lang} />
+          <AbilityCell key={item.id} id={item.id} abilities={abilities} picked={false} recommended={false} lang={lang} />
         ))}
       </div>
       <h3>{tx(lang, copy.abilityElective)}</h3>
       <div className="ability-grid">
         {ELECTIVES.map((item) => (
-          <AbilityCell key={item.id} id={item.id} abilities={abilities} picked={picked.includes(item.id)} lang={lang} />
+          <AbilityCell
+            key={item.id}
+            id={item.id}
+            abilities={abilities}
+            picked={picked.includes(item.id)}
+            recommended={recommended.includes(item.id)}
+            lang={lang}
+          />
         ))}
       </div>
     </div>
@@ -160,8 +195,9 @@ export function StatMeters({
           <div key={key} className="stat">
             <div className="stat-top">
               <span>{statLabel(key, lang)}</span>
-              <span className="stat-num">
-                {stats[key]}
+              <span className="stat-num" data-testid={`life-${key}`}>
+                {lifePoint(stats[key])}
+                <small>/10</small>
                 {typeof change === "number" && change !== 0 ? (
                   <b className={change > 0 ? "up" : "down"}>{change > 0 ? `+${change}` : change}</b>
                 ) : null}
@@ -174,6 +210,7 @@ export function StatMeters({
           </div>
         );
       })}
+      <p className="life-scale">{tx(lang, copy.lifeScale)}</p>
     </section>
   );
 }
@@ -193,7 +230,8 @@ export function Stepper({ run, lang }: { run: RunState; lang: Lang }) {
 
 export function continueBlurb(run: RunState, lang: Lang): string {
   const pace = run.pace === "fast" ? copy.fastWord : copy.standardWord;
-  return `${tx(lang, pace)} · ${tx(lang, copy.steps[currentStep(run)])}`;
+  const who = run.nickname ? `${run.nickname} · ` : "";
+  return `${who}${tx(lang, pace)} · ${tx(lang, copy.steps[currentStep(run)])}`;
 }
 
 export function TideArt() {

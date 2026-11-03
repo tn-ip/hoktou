@@ -3,7 +3,9 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { copy } from "@/content/copy";
 import { endingView, offerView, pathLine } from "@/content/endings";
+import { INTERESTS, seedProfile } from "@/content/interests";
 import { programmeById, PROGRAMMES } from "@/content/programmes";
+import { sceneById } from "@/content/scenes";
 import {
   comboNote,
   ELECTIVES,
@@ -13,6 +15,7 @@ import {
   MATHS,
   mathLabel,
   PRESETS,
+  suggestElectives,
   type Dilemma,
 } from "@/content/subjects";
 import {
@@ -30,15 +33,16 @@ import {
 } from "@/lib/engine";
 import { clearRun, loadLang, loadRun, saveLang, saveRun } from "@/lib/storage";
 import { tx } from "@/lib/text";
-import type { ElectiveId, Lang, MathModule, Pace, RunState } from "@/lib/types";
-import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, StatMeters, Stepper, TideArt } from "@/components/widgets";
+import type { ElectiveId, InterestId, Lang, MathModule, RunState } from "@/lib/types";
+import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
 
 export function GameApp() {
   const [ready, setReady] = useState(false);
   const [saved, setSaved] = useState<RunState | null>(null);
   const [run, setRun] = useState<RunState | null>(null);
   const [titleLang, setTitleLang] = useState<Lang>("zh");
-  const [pace, setPace] = useState<Pace>("standard");
+  const [nickname, setNickname] = useState("");
+  const [interests, setInterests] = useState<InterestId[]>([]);
   const [confirmNew, setConfirmNew] = useState(false);
   const [confirmRestart, setConfirmRestart] = useState(false);
   const [blocked, setBlocked] = useState(false);
@@ -78,8 +82,16 @@ export function GameApp() {
     setSaved((current) => (current ? { ...current, lang: next } : current));
   }
 
+  function toggleInterest(id: InterestId) {
+    setInterests((current) => {
+      if (current.includes(id)) return current.filter((item) => item !== id);
+      if (current.length >= 3) return current;
+      return [...current, id];
+    });
+  }
+
   function start() {
-    const next = createRun(pace, lang);
+    const next = createRun("standard", lang, { nickname, interests });
     setRun(next);
     setSaved(next);
     setConfirmNew(false);
@@ -138,6 +150,11 @@ export function GameApp() {
               <div className="brandrow">
                 <div>
                   <p className="brand">學途</p>
+                  {run.nickname ? (
+                    <p className="player-name" data-testid="player-name">
+                      {run.nickname}
+                    </p>
+                  ) : null}
                   <p className="school">{tx(lang, copy.school)}</p>
                 </div>
                 <LangToggle lang={lang} onChange={changeLang} />
@@ -213,12 +230,14 @@ export function GameApp() {
         ) : (
           <TitleScreen
             lang={lang}
-            pace={pace}
+            nickname={nickname}
+            interests={interests}
             saved={saved}
             confirmNew={confirmNew}
             headingRef={headingRef}
             onLang={changeLang}
-            onPace={setPace}
+            onNickname={setNickname}
+            onToggleInterest={toggleInterest}
             onContinue={() => saved && setRun(saved)}
             onAskNew={() => setConfirmNew(true)}
             onCancelNew={() => setConfirmNew(false)}
@@ -233,29 +252,36 @@ export function GameApp() {
 
 function TitleScreen({
   lang,
-  pace,
+  nickname,
+  interests,
   saved,
   confirmNew,
   headingRef,
   onLang,
-  onPace,
+  onNickname,
+  onToggleInterest,
   onContinue,
   onAskNew,
   onCancelNew,
   onStart,
 }: {
   lang: Lang;
-  pace: Pace;
+  nickname: string;
+  interests: InterestId[];
   saved: RunState | null;
   confirmNew: boolean;
   headingRef: RefObject<HTMLHeadingElement | null>;
   onLang: (lang: Lang) => void;
-  onPace: (pace: Pace) => void;
+  onNickname: (value: string) => void;
+  onToggleInterest: (id: InterestId) => void;
   onContinue: () => void;
   onAskNew: () => void;
   onCancelNew: () => void;
   onStart: () => void;
 }) {
+  const trimmed = nickname.trim();
+  const canStart = trimmed.length >= 1 && trimmed.length <= 16 && interests.length >= 2 && interests.length <= 3;
+  const preview = canStart ? seedProfile(interests) : null;
   return (
     <section className="title" data-testid="phase" data-phase="title">
       <div className="title-top">
@@ -279,23 +305,55 @@ function TitleScreen({
           <span>{continueBlurb(saved, lang)}</span>
         </button>
       ) : null}
+      <label className="field">
+        <span>{tx(lang, copy.nickname)}</span>
+        <input
+          className="nick-field"
+          data-testid="nickname"
+          maxLength={16}
+          value={nickname}
+          autoComplete="nickname"
+          placeholder={tx(lang, copy.nicknameHint)}
+          onChange={(event) => onNickname(event.target.value)}
+        />
+      </label>
       <fieldset>
-        <legend>{tx(lang, copy.length)}</legend>
-        <div className="segmented">
-          <button type="button" aria-pressed={pace === "standard"} data-testid="pace-standard" onClick={() => onPace("standard")}>
-            <strong>{tx(lang, copy.paceStandard)}</strong>
-            <span>{tx(lang, copy.paceStandardHint)}</span>
-          </button>
-          <button type="button" aria-pressed={pace === "fast"} data-testid="pace-fast" onClick={() => onPace("fast")}>
-            <strong>{tx(lang, copy.paceFast)}</strong>
-            <span>{tx(lang, copy.paceFastHint)}</span>
-          </button>
+        <legend>{tx(lang, copy.interests)}</legend>
+        <p className="note">{tx(lang, copy.interestHint)}</p>
+        <div className="interest-grid">
+          {INTERESTS.map((item) => {
+            const selected = interests.includes(item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                aria-pressed={selected}
+                data-testid={`interest-${item.id}`}
+                disabled={!selected && interests.length >= 3}
+                onClick={() => onToggleInterest(item.id)}
+              >
+                <strong>{tx(lang, item.name)}</strong>
+                <span>{tx(lang, item.hint)}</span>
+              </button>
+            );
+          })}
         </div>
+        {interests.length >= 3 ? <p className="note">{tx(lang, copy.interestFull)}</p> : null}
       </fieldset>
+      {preview ? (
+        <div data-testid="start-chart">
+          <h2>{tx(lang, copy.lifeTitle)}</h2>
+          <StatMeters stats={preview.stats} delta={null} lang={lang} />
+          <h2>{tx(lang, copy.chartTitle)}</h2>
+          <AbilityBoard abilities={preview.abilities} picked={[]} lang={lang} />
+        </div>
+      ) : (
+        <p className="note">{tx(lang, copy.needStart)}</p>
+      )}
       {confirmNew ? (
         <div className="confirm">
           <p>{tx(lang, copy.confirmNew)}</p>
-          <button type="button" className="primary" data-testid="confirm-new" onClick={onStart}>
+          <button type="button" className="primary" data-testid="confirm-new" disabled={!canStart} onClick={onStart}>
             {tx(lang, copy.yes)}
           </button>
           <button type="button" className="ghost" onClick={onCancelNew}>
@@ -303,7 +361,7 @@ function TitleScreen({
           </button>
         </div>
       ) : (
-        <button type="button" className={saved ? "ghost" : "primary"} data-testid="start" onClick={saved ? onAskNew : onStart}>
+        <button type="button" className={saved ? "ghost" : "primary"} data-testid="start" disabled={!canStart} onClick={saved ? onAskNew : onStart}>
           {saved ? tx(lang, copy.newGame) : tx(lang, copy.start)}
         </button>
       )}
@@ -345,6 +403,8 @@ function SceneCard({
   onChoose: (id: string) => void;
 }) {
   const view = sceneView(run);
+  const year = sceneById(run.sceneId)?.year;
+  const suggestion = year === "S3" && run.electives.length === 0 ? suggestElectives(run.abilities, run.interests) : null;
   if (!view) {
     return (
       <article className="card">
@@ -365,15 +425,41 @@ function SceneCard({
       </p>
       {run.lastEcho ? <p className="echo">{tx(lang, copy.lastChoice)}{tx(lang, run.lastEcho)}</p> : null}
       <AbilityEcho delta={run.lastAbilities} lang={lang} banner />
+      <StatFeedback effects={run.lastEffects} stats={run.stats} lang={lang} />
       {run.log.length === 0 ? <p className="hint">{tx(lang, copy.firstHint)}</p> : null}
       <p className="prose">{tx(lang, view.body)}</p>
+      {year === "S3" ? (
+        <div className="ability-board-wrap">
+          <h2>{tx(lang, copy.abilityBoard)}</h2>
+          <AbilityBoard abilities={run.abilities} picked={run.electives} recommended={suggestion?.electives ?? []} lang={lang} />
+          {suggestion ? (
+            <p className="note" data-testid="s3-lean">
+              {tx(lang, copy.s3Suggestion)}：{joinElectives(suggestion.electives, lang)}
+              {" · "}
+              {mathLabel(suggestion.math, lang, "short")}
+            </p>
+          ) : null}
+        </div>
+      ) : null}
       <div className="choices">
         {view.choices.map((choice) => (
-          <button key={choice.id} type="button" className="choice" data-testid={`choice-${choice.id}`} onClick={() => onChoose(choice.id)}>
+          <button
+            key={choice.id}
+            type="button"
+            className={choice.blocked ? "choice blocked" : "choice"}
+            data-testid={`choice-${choice.id}`}
+            disabled={Boolean(choice.blocked)}
+            onClick={() => onChoose(choice.id)}
+          >
             <span className="label">{tx(lang, choice.label)}</span>
             <span className="detail">{tx(lang, choice.detail)}</span>
             <AbilityEcho delta={choice.ability} lang={lang} />
             <EffectLine effects={choice.effects} lang={lang} />
+            {choice.blocked ? (
+              <span className="block-reason" data-testid={`blocked-${choice.id}`}>
+                {tx(lang, choice.blocked)}
+              </span>
+            ) : null}
           </button>
         ))}
       </div>
@@ -407,6 +493,11 @@ function ElectiveCard({
   onRevise: () => void;
 }) {
   const note = comboNote(run.electives, run.mathModule, lang);
+  const suggestion = suggestElectives(run.abilities, run.interests);
+  const usingSuggestion =
+    suggestion.electives.every((id) => run.electives.includes(id)) &&
+    run.electives.length === 3 &&
+    run.mathModule === suggestion.math;
   const dilemmaRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (dilemmas && dilemmas.length > 0) dilemmaRef.current?.focus();
@@ -422,19 +513,35 @@ function ElectiveCard({
       </p>
       {run.lastEcho ? <p className="echo">{tx(lang, copy.lastChoice)}{tx(lang, run.lastEcho)}</p> : null}
       <AbilityEcho delta={run.lastAbilities} lang={lang} banner />
+      <StatFeedback effects={run.lastEffects} stats={run.stats} lang={lang} />
       <p className="prose">{electiveIntro(run.flags, lang)}</p>
+      <p className="note">{tx(lang, copy.suggestedLead)}</p>
+      <button
+        type="button"
+        className="preset suggestion"
+        data-testid="accept-suggestion"
+        aria-pressed={usingSuggestion}
+        onClick={() => onPreset(suggestion.electives, suggestion.math)}
+      >
+        <strong>{tx(lang, copy.acceptSuggestion)}</strong>
+        <span>
+          {joinElectives(suggestion.electives, lang)}
+          {" · "}
+          {mathLabel(suggestion.math, lang, "short")}
+        </span>
+      </button>
       <div className="elective-layout">
         <div className="ability-board-wrap">
           <h2>{tx(lang, copy.abilityBoard)}</h2>
           <p className="note">{tx(lang, copy.abilityScale)}</p>
-          <AbilityBoard abilities={run.abilities} picked={run.electives} lang={lang} />
+          <AbilityBoard abilities={run.abilities} picked={run.electives} recommended={suggestion.electives} lang={lang} />
           <p className="note">{tx(lang, copy.abilityLegend)}</p>
         </div>
         <div>
           <h2>{tx(lang, copy.presets)}</h2>
           <div className="presets">
             {PRESETS.map((preset) => (
-              <button key={preset.id} type="button" className="preset" onClick={() => onPreset(preset.electives, preset.math)}>
+              <button key={preset.id} type="button" className="preset" data-testid={`preset-${preset.id}`} onClick={() => onPreset(preset.electives, preset.math)}>
                 {tx(lang, preset.label)}
               </button>
             ))}
@@ -449,8 +556,9 @@ function ElectiveCard({
                 <button
                   key={item.id}
                   type="button"
-                  className="subject"
+                  className={suggestion.electives.includes(item.id) ? "subject recommended" : "subject"}
                   aria-pressed={selected}
+                  data-recommended={suggestion.electives.includes(item.id) ? "yes" : "no"}
                   data-testid={`elective-${item.id}`}
                   onClick={() => onToggle(item.id)}
                 >
@@ -723,6 +831,7 @@ function SummaryCard({
         {tx(lang, copy.summaryTitle)}
       </h1>
       <p className="note">
+        {run.nickname ? `${run.nickname} · ` : ""}
         {tx(lang, copy.paceLabel)}：{tx(lang, run.pace === "fast" ? copy.fastWord : copy.standardWord)}
         {" · "}
         {tx(lang, copy.school)}

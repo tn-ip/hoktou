@@ -287,6 +287,74 @@ legend { font-weight: 700; margin-bottom: 8px; }
 
 .segmented span { color: var(--muted); font-size: 0.9rem; }
 
+.field { display: block; margin-top: 18px; font-weight: 700; }
+
+.nick-field {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--card);
+  font-weight: 500;
+}
+
+.interest-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.interest-grid button {
+  text-align: left;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 12px 14px;
+  min-height: 52px;
+}
+
+.interest-grid button[aria-pressed="true"] {
+  border-color: var(--teal);
+  box-shadow: inset 4px 0 0 var(--teal);
+}
+
+.interest-grid strong, .interest-grid span { display: block; }
+
+.interest-grid span { color: var(--muted); font-size: 0.84rem; font-weight: 500; }
+
+.player-name { margin: 0; font-weight: 700; }
+
+.preset.suggestion {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+  margin: 8px 0 4px;
+  border-radius: 16px;
+  text-align: left;
+}
+
+.preset.suggestion span { color: var(--muted); font-size: 0.9rem; font-weight: 500; }
+
+.preset.suggestion[aria-pressed="true"] {
+  border-color: var(--gold);
+  box-shadow: inset 4px 0 0 var(--gold);
+}
+
+.subject.recommended, .ability-cell.recommended {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.recommend-badge {
+  margin-left: 6px;
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .confirm {
   background: var(--card);
   border-radius: 16px;
@@ -355,6 +423,21 @@ legend { font-weight: 700; margin-bottom: 8px; }
 
 .stat-num { font-variant-numeric: tabular-nums; }
 
+.stat-num small {
+  margin-left: 1px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.life-scale {
+  grid-column: 1 / -1;
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
 .bar {
   height: 8px;
   background: var(--track);
@@ -420,6 +503,20 @@ legend { font-weight: 700; margin-bottom: 8px; }
 }
 
 .choice:hover { border-color: var(--teal); }
+
+.choice:disabled {
+  opacity: 1;
+  border-color: var(--coral);
+  background: var(--soft);
+}
+
+.choice:disabled:hover { border-color: var(--coral); }
+
+.block-reason {
+  color: var(--bad);
+  font-weight: 700;
+  font-size: 0.92rem;
+}
 
 .choice .label { font-weight: 700; }
 
@@ -537,7 +634,7 @@ legend { font-weight: 700; margin-bottom: 8px; }
 
 .ability-echo { display: block; margin-top: 6px; font-weight: 700; color: var(--teal-deep); }
 
-.ability-feedback {
+.ability-feedback, .stat-feedback {
   margin: 12px 0 0;
   padding: 10px 12px;
   border-radius: 14px;
@@ -545,6 +642,8 @@ legend { font-weight: 700; margin-bottom: 8px; }
   font-weight: 700;
   color: var(--teal-deep);
 }
+
+.stat-feedback { background: var(--soft); }
 
 .dilemmas .dilemma {
   margin: 10px 0;
