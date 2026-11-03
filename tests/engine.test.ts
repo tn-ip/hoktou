@@ -1,7 +1,9 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { readFileSync } from "node:fs";
 import { copy } from "@/content/copy";
 import { endingView, offerView } from "@/content/endings";
+import { INTERESTS, seedProfile } from "@/content/interests";
 import { PROGRAMMES, programmeById } from "@/content/programmes";
 import { EXTRA_SCENE_IDS } from "@/content/decisions";
 import { LIFE_PLAYLIST, PLAYLIST, SCENES, sceneById } from "@/content/scenes";
@@ -15,6 +17,7 @@ import {
   PRESETS,
   startAbilities,
   SUBJECT_IDS,
+  suggestElectives,
 } from "@/content/subjects";
 import {
   abilityLift,
@@ -30,7 +33,9 @@ import {
   sceneView,
   defaultFlags,
   START_STATS,
+  statFeedbackLine,
 } from "@/lib/engine";
+import { blockReason, gatedChoiceIds, lifePoint } from "@/lib/gates";
 import { parseRun } from "@/lib/storage";
 import type { Abilities, ElectiveId, Lang, MathModule, Pace, RunState, SceneCtx } from "@/lib/types";
 
@@ -154,7 +159,7 @@ describe("hoktou loop", () => {
   });
 
   it("writes traditional Chinese and English for the static catalogue", () => {
-    const bags = [copy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES];
+    const bags = [copy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES, INTERESTS];
     for (const bag of bags) {
       walkLocale(bag, (text, lang, path) => {
         assert.ok(text.trim().length > 0, path);
@@ -459,7 +464,117 @@ describe("hoktou loop", () => {
     assert.ok(strong > neutral);
     assert.equal(parseRun({ ...JSON.parse(JSON.stringify(run)), abilities: undefined, lastAbilities: undefined })?.abilities.math, 5);
   });
+
+  it("seeds a nickname, interests, abilities and mid life stats, and hides fast", () => {
+    const ui = readFileSync("components/GameApp.tsx", "utf8");
+    assert.equal(ui.includes("pace-fast"), false);
+    assert.match(ui, /createRun\("standard"/);
+    const run = createRun("standard", "zh", { nickname: "  家琪  ", interests: ["science", "service", "science"] });
+    assert.equal(run.pace, "standard");
+    assert.equal(run.nickname, "家琪");
+    assert.deepEqual(run.interests, ["science", "service"]);
+    assert.equal(run.abilities.phy, 6);
+    assert.equal(run.abilities.chem, 6);
+    assert.equal(run.abilities.bio, 6);
+    assert.equal(run.abilities.cs, 6);
+    assert.equal(run.abilities.pe, 5);
+    assert.equal(run.abilities.chi, 5);
+    assert.equal(lifePoint(run.stats.academic), 6);
+    assert.equal(lifePoint(run.stats.curiosity), 6);
+    assert.equal(lifePoint(run.stats.wellbeing), 6);
+    assert.equal(lifePoint(run.stats.social), 6);
+    assert.equal(lifePoint(START_STATS.academic), 5);
+    assert.equal(lifePoint(START_STATS.wellbeing), 6);
+    const both = seedProfile(["business", "computer"]);
+    assert.equal(both.abilities.math, 7);
+    assert.equal(both.abilities.ict, 6);
+    assert.equal(both.abilities.econ, 6);
+    const old = JSON.parse(JSON.stringify(createRun("fast", "en"))) as Record<string, unknown>;
+    delete old.nickname;
+    delete old.interests;
+    const parsed = parseRun(old);
+    assert.equal(parsed?.nickname, "");
+    assert.deepEqual(parsed?.interests, []);
+    assert.equal(parsed?.abilities.math, 5);
+  });
+
+  it("closes mapped opportunities at life stat 4 and at subject ability 4", () => {
+    assert.equal(lifePoint(44), 4);
+    assert.equal(lifePoint(45), 5);
+    const open = createRun("standard", "zh", { nickname: "阿澄", interests: ["language", "art"] });
+    assert.equal(blockReason(toCtx(open), "s1-ab-olympiad-go"), null);
+    const lowStudy = { ...open, stats: { ...open.stats, academic: 44 } };
+    const studyBlock = blockReason(toCtx(lowStudy), "s1-ab-olympiad-go");
+    assert.match(studyBlock?.zh ?? "", /學業只有 4／10/);
+    assert.match(studyBlock?.zh ?? "", /奧數/);
+    assert.equal(blockReason(toCtx({ ...open, stats: { ...open.stats, academic: 45 } }), "s1-ab-olympiad-go"), null);
+    assert.throws(() => applyChoice({ ...lowStudy, sceneId: "s1-ab-olympiad", phase: "scene" }, "s1-ab-olympiad-go"));
+    const weakMath = { ...open, abilities: { ...open.abilities, math: 4 } };
+    assert.match(blockReason(toCtx(weakMath), "s1-ab-olympiad-go")?.zh ?? "", /數學只有 4／10/);
+    const tired = { ...open, stats: { ...open.stats, wellbeing: 40 } };
+    assert.match(blockReason(toCtx(tired), "s1-ab-pe-try")?.zh ?? "", /身心只有 4／10/);
+    assert.match(blockReason(toCtx(tired), "s3b-camp-full")?.zh ?? "", /兩日學科營/);
+    assert.match(blockReason(toCtx({ ...open, stats: { ...open.stats, social: 30 } }), "s1-ab-debate-en")?.zh ?? "", /辯論/);
+    assert.match(blockReason(toCtx({ ...open, stats: { ...open.stats, social: 30 } }), "s2-ab-stall-sell")?.zh ?? "", /叫賣/);
+    assert.match(blockReason(toCtx({ ...open, stats: { ...open.stats, curiosity: 30 } }), "s1-ab-museum-hist")?.zh ?? "", /博物館/);
+    assert.match(blockReason(toCtx({ ...open, stats: { ...open.stats, curiosity: 30 } }), "s1-ab-labday-help")?.zh ?? "", /開放實驗室/);
+    const museum = sceneView({ ...open, sceneId: "s1-ab-museum", phase: "scene", stats: { ...open.stats, curiosity: 30 } });
+    assert.ok(museum);
+    assert.equal(museum.choices.filter((choice) => !choice.blocked).map((choice) => choice.id).join(","), "s1-ab-museum-blocked-miss");
+    const missed = applyChoice(
+      { ...open, sceneId: "s1-ab-museum", phase: "scene", stats: { ...open.stats, curiosity: 30 } },
+      "s1-ab-museum-blocked-miss",
+    );
+    assert.equal(missed.abilities.hist, open.abilities.hist);
+    assert.equal(missed.abilities.phy, open.abilities.phy);
+    const high: SceneCtx = {
+      ...toCtx(open),
+      stats: { academic: 80, curiosity: 80, wellbeing: 80, social: 80 },
+      abilities: { ...open.abilities, phy: 8, chem: 8, bio: 8, math: 8, eng: 8, pe: 8 },
+    };
+    for (const id of gatedChoiceIds()) assert.equal(blockReason(high, id), null, id);
+    const low: SceneCtx = {
+      ...toCtx(open),
+      stats: { academic: 20, curiosity: 20, wellbeing: 20, social: 20 },
+      abilities: Object.fromEntries(SUBJECT_IDS.map((id) => [id, 3])) as Abilities,
+    };
+    for (const id of gatedChoiceIds()) {
+      const reason = blockReason(low, id);
+      assert.ok(reason, id);
+      assert.equal(BAD_ZH.test(reason.zh), false, `${id}: ${reason.zh}`);
+      assert.ok(reason.en.trim().length > 8, id);
+    }
+    const gone = applyChoice({ ...lowStudy, sceneId: "s1-ab-olympiad", phase: "scene" }, "s1-ab-olympiad-rest");
+    assert.equal(statFeedbackLine(gone.lastEffects, gone.stats, "zh")?.includes("身心"), true);
+    assert.match(statFeedbackLine(gone.lastEffects, gone.stats, "zh") ?? "", /而家/);
+  });
+
+  it("suggests a three-elective mix and still allows another", () => {
+    const science = seedProfile(["science", "sport"]);
+    const suggested = suggestElectives(science.abilities, ["science", "sport"]);
+    assert.deepEqual(suggested.electives, ["phy", "chem", "pe"]);
+    assert.equal(suggested.math, "none");
+    const business = seedProfile(["business", "computer"]);
+    const biz = suggestElectives(business.abilities, ["business", "computer"]);
+    assert.deepEqual(biz.electives, ["econ", "bafs", "ict"]);
+    assert.equal(biz.math, "m2");
+    const letters = seedProfile(["humanities", "art"]);
+    assert.deepEqual(suggestElectives(letters.abilities, ["humanities", "art"]).electives, ["hist", "chist", "va"]);
+    const chart = { ...startAbilities(), va: 9, phy: 6, chem: 6, bio: 6, pe: 6 };
+    assert.deepEqual(suggestElectives(chart, ["science", "sport"]).electives, ["phy", "va", "pe"]);
+  });
 });
+
+function toCtx(run: RunState): SceneCtx {
+  return {
+    stats: run.stats,
+    abilities: run.abilities,
+    electives: run.electives,
+    mathModule: run.mathModule,
+    flags: run.flags,
+    pace: run.pace,
+  };
+}
 
 function sceneViewAt(run: RunState, sceneId: string): string {
   const replay = { ...run, phase: "scene" as const, sceneId };

@@ -1,3 +1,4 @@
+import { normalizeInterests } from "@/content/interests";
 import { sceneById } from "@/content/scenes";
 import { programmeById } from "@/content/programmes";
 import { ELECTIVE_IDS, readAbilities, SUBJECT_IDS } from "@/content/subjects";
@@ -6,6 +7,7 @@ import type {
   Abilities,
   ElectiveId,
   Flags,
+  InterestId,
   Lang,
   LogEntry,
   MathModule,
@@ -15,6 +17,7 @@ import type {
   Stats,
   SubjectId,
 } from "@/lib/types";
+import { INTEREST_IDS } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
 
 const RUN_KEY = "hoktou.v1";
@@ -29,6 +32,12 @@ function isLocale(value: unknown): value is { zh: string; en: string } {
   if (!value || typeof value !== "object") return false;
   const record = value as { zh?: unknown; en?: unknown };
   return typeof record.zh === "string" && typeof record.en === "string";
+}
+
+function readInterests(value: unknown): RunState["interests"] {
+  if (!Array.isArray(value)) return [];
+  const ids = value.filter((id): id is InterestId => typeof id === "string" && INTEREST_IDS.includes(id as InterestId));
+  return normalizeInterests(ids);
 }
 
 function readStats(value: unknown): Stats | null {
@@ -111,6 +120,8 @@ export function parseRun(raw: unknown): RunState | null {
     version: 1,
     pace: value.pace,
     lang: value.lang,
+    nickname: typeof value.nickname === "string" ? value.nickname.trim().slice(0, 16) : "",
+    interests: readInterests(value.interests),
     phase: value.phase,
     sceneId,
     stats,

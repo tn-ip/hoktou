@@ -2,6 +2,7 @@ import type {
   Abilities,
   ElectiveId,
   Flags,
+  InterestId,
   Lang,
   LocaleText,
   MathModule,
@@ -437,6 +438,81 @@ export function electiveDilemmas(abilities: Abilities, electives: ElectiveId[]):
     });
   }
   return found;
+}
+
+const INTEREST_ELECTIVES: Record<InterestId, ElectiveId[]> = {
+  science: ["phy", "chem", "bio"],
+  humanities: ["hist", "chist", "geog"],
+  business: ["econ", "bafs", "geog"],
+  art: ["va"],
+  sport: ["pe"],
+  computer: ["ict"],
+  language: ["hist", "chist"],
+  service: ["geog"],
+};
+
+const INTEREST_BONUS: Record<InterestId, Partial<Record<ElectiveId, number>>> = {
+  science: { phy: 2, chem: 2, bio: 2 },
+  humanities: { hist: 2, chist: 2, geog: 2 },
+  business: { econ: 2, bafs: 2, geog: 1 },
+  art: { va: 3 },
+  sport: { pe: 3 },
+  computer: { ict: 3 },
+  language: { hist: 1, chist: 1 },
+  service: { geog: 1 },
+};
+
+export type ElectiveSuggestion = {
+  electives: [ElectiveId, ElectiveId, ElectiveId];
+  math: MathModule;
+};
+
+export function suggestElectives(abilities: Abilities, interests: readonly InterestId[]): ElectiveSuggestion {
+  const bonus = Object.fromEntries(ELECTIVE_IDS.map((id) => [id, 0])) as Record<ElectiveId, number>;
+  for (const interest of interests) {
+    const boost = INTEREST_BONUS[interest];
+    if (!boost) continue;
+    for (const id of ELECTIVE_IDS) bonus[id] += boost[id] ?? 0;
+  }
+  const scored = ELECTIVE_IDS.map((id, order) => ({
+    id,
+    order,
+    ability: abilities[id] ?? ABILITY_START,
+    bonus: bonus[id],
+    score: (abilities[id] ?? ABILITY_START) * 10 + bonus[id],
+  }));
+  const taken = new Set<ElectiveId>();
+  for (const interest of interests) {
+    if (taken.size >= 3) break;
+    const aligned = INTEREST_ELECTIVES[interest] ?? [];
+    const best = scored
+      .filter((item) => aligned.includes(item.id) && !taken.has(item.id))
+      .sort((a, b) => b.score - a.score || b.ability - a.ability || a.order - b.order)[0];
+    if (best) taken.add(best.id);
+  }
+  const rest = [...scored].sort((a, b) => b.score - a.score || b.ability - a.ability || a.order - b.order);
+  for (const item of rest) {
+    if (taken.size >= 3) break;
+    taken.add(item.id);
+  }
+  const electives = ELECTIVE_IDS.filter((id) => taken.has(id)).slice(0, 3) as [
+    ElectiveId,
+    ElectiveId,
+    ElectiveId,
+  ];
+  return { electives, math: suggestMath(electives, abilities, interests) };
+}
+
+function suggestMath(electives: ElectiveId[], abilities: Abilities, interests: readonly InterestId[]): MathModule {
+  if ((abilities.math ?? ABILITY_START) <= ABILITY_WEAK) return "none";
+  const ready = (abilities.math ?? ABILITY_START) >= ABILITY_FAIR;
+  const wantsM2 = electives.includes("phy") || electives.includes("ict");
+  const wantsM1 = electives.includes("econ") || electives.includes("bafs") || electives.includes("bio");
+  if (ready && wantsM2) return "m2";
+  if (ready && wantsM1) return "m1";
+  if (ready && interests.includes("computer")) return "m2";
+  if (ready && interests.includes("business")) return "m1";
+  return "none";
 }
 
 export function seniorAbilityNote(abilities: Abilities, electives: ElectiveId[]): LocaleText {

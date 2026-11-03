@@ -55,14 +55,14 @@ Progress stays in this browser under `localStorage` (`hoktou.v1`). There is no a
 
 ## 怎樣玩 How to play
 
-1. 標題畫面選語言（繁體中文／English）、旅程長度，然後開始。
-2. **快速**大約十個決定；**標準**由中一走到工作與生活，大約八十五個決定。兩種長度都會走完中一、中二、中三選科、中四至中六、志願同尾聲。
-3. 每張卡是一個場面，選二至四個做法。四項狀態、各科能力（1 至 10）、選科提示、遊戲指數或尾聲會跟著動。中一、中二有十六個能力場面，選完會顯示如「數學能力 +1」。
-4. 中三先看全部科目的能力表，再選三科選修，可另選數學延伸單元一或二。提醒只在交表時出現，可以堅持，也可以返回改。
+1. 標題畫面選語言（繁體中文／English），寫花名，揀兩至三項興趣，然後開始。新遊戲一律走完整條標準旅程。
+2. 興趣會定好開局能力表（十五科，1 至 10，大約由 5 起步）同四項狀態（學業、好奇、身心、人際，大約 5 至 6）。
+3. 每張卡是一個場面，選二至四個做法。四項狀態、各科能力、選科提示、遊戲指數或尾聲會跟著動。狀態或科目到 4 或以下，相關嘅比賽、工作坊同活動會去不成，並寫明原因。中一、中二有十六個能力場面，選完會顯示能力同狀態。
+4. 中三能力表一直留喺畫面。遊戲會按能力同興趣建議一組三科選修，你可以照用，亦可以自己改。提醒只在交表時出現，可以堅持，也可以返回改。
 5. 中六把虛構課程由上至下排列。遊戲由第一志願開始，第一個同時符合科目條件同門檻的課程會取錄。
 6. 尾聲是早年工作與生活。總結可以重新開始。
 
-The title screen has Traditional Chinese and English, plus Fast and Standard length. Fast is about ten decisions. Standard runs from S1 into work and life, about eighty-five decisions. Both include S1–S3, electives, S4–S6, the preference round and the epilogue. Each card has two to four actions. The four on-screen stats are 學業 Study, 好奇 Curiosity, 身心 Wellbeing and 人際 Bonds. Subject abilities run from 1 to 10 and feed the S3 board, the confirm reminders, and the game index.
+The title screen has Traditional Chinese and English. A new game asks for a nickname and two or three interests, then takes the full standard journey from S1 into work and life. Interests seed the fifteen subject abilities (1 to 10, starting near 5) and the four stats 學業 Study, 好奇 Curiosity, 身心 Wellbeing and 人際 Bonds (shown as 1 to 10, starting near 5 or 6). At 4 or below, matching contests, workshops and trips are closed, with a reason on the card. S3 keeps the full ability board up, suggests a three-elective mix, and still lets you change it. Reminders appear only when the form is handed in.
 
 ## MVP 範圍 Scope
 
@@ -71,12 +71,12 @@ The title screen has Traditional Chinese and English, plus Fast and Standard len
 - 望潮中學，中一至中六的年度敘事卡
 - 中三選科（預設組合或自選三科，加可選延伸數學）
 - 選修會改寫之後的課堂、中五作品（科學展、店子點子、口述、創作、小工具或學習周）同學途聯招結果
-- 四項狀態、快速／標準長度、繁體中文與英文
+- 四項狀態（1 至 10）、花名同興趣、繁體中文與英文。新遊戲走標準長度
 - 本地儲存、總結與重新開始
 
 未包含：帳戶、多人、真實學校資料、教師後台、真過去卷。靈感只借「一年一卡、選擇、狀態、總結」這種玩法結構；文字、校名、課程同畫面都是原創。
 
-Included: year cards from S1 to S6, S3 electives, later scenes and a fictional preference round that follow those electives, four stats, two lengths, zh-Hant-HK and English, local save, summary and restart.
+Included: year cards from S1 to S6, S3 electives, later scenes and a fictional preference round that follow those electives, four stats, a nickname and interests, zh-Hant-HK and English, local save, summary and restart. New games use the full standard length.
 
 Not included: accounts, multiplayer, real school data, a teacher dashboard, or past papers. The year-card structure is a common life-sim shape. The writing, school, courses and interface are original.
 

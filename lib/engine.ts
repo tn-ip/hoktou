@@ -1,6 +1,8 @@
+import { BASE_STATS, normalizeInterests, seedProfile } from "@/content/interests";
 import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
 import { PROGRAMMES, programmeById, type Programme } from "@/content/programmes";
 import { applyAbilityDelta, joinElectives, mathLabel, startAbilities } from "@/content/subjects";
+import { annotateChoices, lifePoint } from "@/lib/gates";
 import { fairAligns, projectTrack } from "@/lib/track";
 import type {
   Choice,
@@ -12,20 +14,16 @@ import type {
   Phase,
   RunState,
   SceneCtx,
+  StartProfile,
   StatKey,
   Stats,
   StepId,
   StepStatus,
 } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
-import { line } from "@/lib/text";
+import { line, statLabel } from "@/lib/text";
 
-export const START_STATS: Stats = {
-  academic: 52,
-  curiosity: 50,
-  wellbeing: 58,
-  social: 48,
-};
+export const START_STATS: Stats = BASE_STATS;
 
 export function defaultFlags(): RunState["flags"] {
   return {
@@ -108,6 +106,26 @@ export type SceneView = {
   choices: Choice[];
 };
 
+export function statFeedbackLine(
+  effects: Partial<Stats> | null | undefined,
+  stats: Stats,
+  lang: RunState["lang"],
+): string | null {
+  if (!effects) return null;
+  const parts = STAT_KEYS.filter((key) => typeof effects[key] === "number" && effects[key] !== 0);
+  if (parts.length === 0) return null;
+  return parts
+    .map((key) => {
+      const value = effects[key] as number;
+      const signed = value > 0 ? `+${value}` : `${value}`;
+      const point = lifePoint(stats[key]);
+      return lang === "zh"
+        ? `${statLabel(key, "zh")} ${signed}，而家 ${point}／10`
+        : `${statLabel(key, "en")} ${signed}, now ${point}/10`;
+    })
+    .join(lang === "zh" ? "、" : ", ");
+}
+
 export function sceneView(run: RunState): SceneView | null {
   const scene = sceneById(run.sceneId);
   if (!scene) return null;
@@ -117,21 +135,25 @@ export function sceneView(run: RunState): SceneView | null {
     title: readText(scene.title, ctx),
     focus: readText(scene.focus, ctx),
     body: scene.body(ctx),
-    choices: scene.choices(ctx),
+    choices: annotateChoices(scene.id, scene.choices(ctx), ctx),
   };
 }
 
-export function createRun(pace: Pace, lang: RunState["lang"]): RunState {
+export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProfile = {}): RunState {
   const first = visiblePlaylist(pace).find((beat) => beat.kind === "scene");
   if (!first || first.kind !== "scene") throw new Error("Playlist has no scene");
+  const interests = normalizeInterests(profile.interests);
+  const seeded = seedProfile(interests);
   return {
     version: 1,
     pace,
     lang,
+    nickname: (profile.nickname ?? "").trim().slice(0, 16),
+    interests,
     phase: "scene",
     sceneId: first.id,
-    stats: { ...START_STATS },
-    abilities: startAbilities(),
+    stats: seeded.stats,
+    abilities: seeded.abilities,
     electives: [],
     mathModule: "none",
     flags: defaultFlags(),
@@ -176,8 +198,9 @@ export function applyChoice(run: RunState, choiceId: string): RunState {
   const scene = sceneById(run.sceneId);
   if (!scene) throw new Error("Missing scene");
   const ctx = toCtx(run);
-  const choice = scene.choices(ctx).find((item) => item.id === choiceId);
+  const choice = annotateChoices(scene.id, scene.choices(ctx), ctx).find((item) => item.id === choiceId);
   if (!choice) throw new Error(`Unknown choice ${choiceId}`);
+  if (choice.blocked) throw new Error(`Blocked choice ${choiceId}`);
   const stats = applyEffects(run.stats, choice.effects);
   const abilities = applyAbilityDelta(run.abilities ?? startAbilities(), choice.ability);
   const drafted: RunState = { ...run, stats, abilities };
@@ -434,7 +457,7 @@ export function progress(run: RunState): { id: StepId; status: StepStatus }[] {
 }
 
 export function choiceIds(run: RunState): string[] {
-  return sceneView(run)?.choices.map((choice) => choice.id) ?? [];
+  return sceneView(run)?.choices.filter((choice) => !choice.blocked).map((choice) => choice.id) ?? [];
 }
 
 export function isStatKey(value: string): value is StatKey {
