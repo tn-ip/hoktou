@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import { copy } from "@/content/copy";
+import { reflectionCopy } from "@/content/reflections";
 import { endingView, offerView } from "@/content/endings";
 import { INTERESTS, seedProfile } from "@/content/interests";
 import { PROGRAMMES, programmeById } from "@/content/programmes";
@@ -30,6 +31,7 @@ import {
   createRun,
   programmeScore,
   rankTarget,
+  resolveReflection,
   sceneView,
   defaultFlags,
   START_STATS,
@@ -105,7 +107,8 @@ function play(
   let run = createRun(pace, "zh");
   let guard = 0;
   while (run.phase === "scene" || run.phase === "electives" || run.phase === "ranking") {
-    if (run.phase === "electives") run = confirmElectives(run, electives, math);
+    if (run.pause) run = resolveReflection(run, null);
+    else if (run.phase === "electives") run = confirmElectives(run, electives, math);
     else if (run.phase === "ranking") run = confirmRanking(run, ranking.slice(0, rankTarget(pace)));
     else run = applyChoice(run, pick(run.sceneId, choiceIds(run)));
     if (++guard > 120) throw new Error(`loop at ${run.phase} ${run.sceneId}`);
@@ -159,7 +162,7 @@ describe("hoktou loop", () => {
   });
 
   it("writes traditional Chinese and English for the static catalogue", () => {
-    const bags = [copy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES, INTERESTS];
+    const bags = [copy, reflectionCopy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES, INTERESTS];
     for (const bag of bags) {
       walkLocale(bag, (text, lang, path) => {
         assert.ok(text.trim().length > 0, path);
@@ -211,6 +214,10 @@ describe("hoktou loop", () => {
         assert.equal(life.sceneId, "life-orientation");
         let steps = 0;
         while (life.phase === "scene") {
+          if (life.pause) {
+            life = resolveReflection(life, null);
+            continue;
+          }
           life = applyChoice(life, choiceIds(life)[0]);
           if (++steps > 20) throw new Error("life loop");
         }
@@ -442,7 +449,11 @@ describe("hoktou loop", () => {
     assert.equal(electiveDilemmas(base, ["econ", "geog", "hist"]).length, 0);
 
     let run = createRun("fast", "zh");
-    while (run.phase === "scene") run = applyChoice(run, choiceIds(run)[0]);
+    while (run.phase === "scene") {
+      if (run.pause) run = resolveReflection(run, null);
+      else run = applyChoice(run, choiceIds(run)[0]);
+    }
+    if (run.pause) run = resolveReflection(run, null);
     assert.equal(run.phase, "electives");
     run = confirmElectives(run, ["chem", "hist", "geog"], "none");
     assert.equal(run.phase, "scene");

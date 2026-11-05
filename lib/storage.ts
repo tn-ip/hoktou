@@ -1,4 +1,5 @@
 import { normalizeInterests } from "@/content/interests";
+import { clipReflection } from "@/content/reflections";
 import { sceneById } from "@/content/scenes";
 import { programmeById } from "@/content/programmes";
 import { ELECTIVE_IDS, readAbilities, SUBJECT_IDS } from "@/content/subjects";
@@ -13,12 +14,13 @@ import type {
   MathModule,
   OfferKind,
   Phase,
+  Reflection,
+  ReflectionId,
   RunState,
   Stats,
   SubjectId,
 } from "@/lib/types";
-import { INTEREST_IDS } from "@/lib/types";
-import { STAT_KEYS } from "@/lib/types";
+import { INTEREST_IDS, REFLECTION_IDS, STAT_KEYS } from "@/lib/types";
 
 const RUN_KEY = "hoktou.v1";
 const LANG_KEY = "hoktou.lang";
@@ -65,6 +67,39 @@ function readFlags(value: unknown): Flags {
   return flags;
 }
 
+function isReflectionId(value: unknown): value is ReflectionId {
+  return typeof value === "string" && (REFLECTION_IDS as readonly string[]).includes(value);
+}
+
+function readReflections(value: unknown): Reflection[] {
+  if (!Array.isArray(value)) return [];
+  const found = new Map<ReflectionId, Reflection>();
+  for (const item of value) {
+    if (!item || typeof item !== "object") continue;
+    const entry = item as Partial<Reflection>;
+    if (!isReflectionId(entry.id)) continue;
+    const text = typeof entry.text === "string" ? clipReflection(entry.text) : "";
+    const skipped = entry.skipped === true || text.length === 0;
+    found.set(entry.id, { id: entry.id, text: skipped ? "" : text, skipped });
+  }
+  return REFLECTION_IDS.flatMap((id) => {
+    const item = found.get(id);
+    return item ? [item] : [];
+  });
+}
+
+function readPause(value: unknown, reflections: Reflection[]): ReflectionId | null {
+  if (!isReflectionId(value)) return null;
+  if (reflections.some((item) => item.id === value)) return null;
+  return value;
+}
+
+function savedVersion(raw: object): 1 | 2 | null {
+  const version = (raw as { version?: unknown }).version;
+  if (version === 1 || version === 2) return version;
+  return null;
+}
+
 function readLog(value: unknown): LogEntry[] {
   if (!Array.isArray(value)) return [];
   const log: LogEntry[] = [];
@@ -89,7 +124,8 @@ function readLog(value: unknown): LogEntry[] {
 export function parseRun(raw: unknown): RunState | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Partial<RunState>;
-  if (value.version !== 1) return null;
+  // hoktou.v1 keeps the same key. Version 1 saves have no reflections; they load as version 2.
+  if (savedVersion(value) === null) return null;
   if (value.pace !== "fast" && value.pace !== "standard") return null;
   if (value.lang !== "zh" && value.lang !== "en") return null;
   if (!value.phase || !PHASES.includes(value.phase)) return null;
@@ -116,8 +152,9 @@ export function parseRun(raw: unknown): RunState | null {
   if (!offerId && (offerKind === "degree" || offerKind === "subdegree")) offerKind = "work";
   const sceneId = typeof value.sceneId === "string" ? value.sceneId : "";
   if (value.phase === "scene" && !sceneById(sceneId)) return null;
+  const reflections = readReflections((value as { reflections?: unknown }).reflections);
   const run: RunState = {
-    version: 1,
+    version: 2,
     pace: value.pace,
     lang: value.lang,
     nickname: typeof value.nickname === "string" ? value.nickname.trim().slice(0, 16) : "",
@@ -138,6 +175,8 @@ export function parseRun(raw: unknown): RunState | null {
     lastEffects:
       value.lastEffects && typeof value.lastEffects === "object" ? (value.lastEffects as Partial<Stats>) : null,
     lastAbilities: readAbilityDelta(value.lastAbilities),
+    reflections,
+    pause: readPause((value as { pause?: unknown }).pause, reflections),
   };
   return run;
 }

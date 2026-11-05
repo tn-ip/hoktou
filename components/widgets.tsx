@@ -1,4 +1,7 @@
+// Node tests compile this file with the classic JSX runtime.
+import React from "react";
 import { copy } from "@/content/copy";
+import { quoteWrap, REFLECTION_PROMPTS, reflectionHeading, writtenReflections } from "@/content/reflections";
 import {
   abilityBand,
   abilityBandLabel,
@@ -252,4 +255,24 @@ export function TideArt() {
 
 export function textOf(lang: Lang, value: LocaleText): string {
   return tx(lang, value);
+}
+
+export function ReflectionQuotes({ run, lang }: { run: Pick<RunState, "reflections">; lang: Lang }) {
+  const quotes = writtenReflections(run.reflections ?? []);
+  if (quotes.length === 0) return null;
+  return (
+    <section className="kept-lines" data-testid="reflection-quotes">
+      <h2>{tx(lang, reflectionHeading)}</h2>
+      <ul className="quote-list">
+        {quotes.map((item) => (
+          <li key={item.id} data-testid={`quote-${item.id}`}>
+            <blockquote>
+              <p>{quoteWrap(item.text, lang)}</p>
+            </blockquote>
+            <p className="quote-by">{tx(lang, REFLECTION_PROMPTS[item.id].label)}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
 }

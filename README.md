@@ -62,7 +62,11 @@ Progress stays in this browser under `localStorage` (`hoktou.v1`). There is no a
 5. 中六把虛構課程由上至下排列。遊戲由第一志願開始，第一個同時符合科目條件同門檻的課程會取錄。
 6. 尾聲是早年工作與生活。總結可以重新開始。
 
+四個里程會暫停片刻：中一第一個選擇之後、進入選科之前、進入學途聯招之前，以及離開校園、看見下一段之前。每次可以寫一句（最多約 120 字），也可以跳過。寫下的句子會以你的原話引在總結上，並註明是哪一個里程；跳過或空白不會出現。這些句子只是敘事，不改變狀態、選科或取錄。
+
 The title screen has Traditional Chinese and English. A new game asks for a nickname and two or three interests, then takes the full standard journey from S1 into work and life. Interests seed the fifteen subject abilities (1 to 10, starting near 5) and the four stats 學業 Study, 好奇 Curiosity, 身心 Wellbeing and 人際 Bonds (shown as 1 to 10, starting near 5 or 6). At 4 or below, matching contests, workshops and trips are closed, with a reason on the card. S3 keeps the full ability board up, suggests a three-elective mix, and still lets you change it. Reminders appear only when the form is handed in.
+
+The journey pauses four times: after the first S1 choice, before electives, before the Hoktou list, and once school is over, before the next stretch. Each pause asks for one optional line (about 120 characters) or a skip. Written lines are quoted on the summary in your words, labelled by milestone. Skipped or blank lines are left out. The lines are narrative only. They do not change stats, electives, or the offer.
 
 ## MVP 範圍 Scope
 
@@ -73,10 +77,11 @@ The title screen has Traditional Chinese and English. A new game asks for a nick
 - 選修會改寫之後的課堂、中五作品（科學展、店子點子、口述、創作、小工具或學習周）同學途聯招結果
 - 四項狀態（1 至 10）、花名同興趣、繁體中文與英文。新遊戲走標準長度
 - 本地儲存、總結與重新開始
+- 四個里程的暫停片刻：可寫一句，或跳過。寫下的話會引在總結
 
 未包含：帳戶、多人、真實學校資料、教師後台、真過去卷。靈感只借「一年一卡、選擇、狀態、總結」這種玩法結構；文字、校名、課程同畫面都是原創。
 
-Included: year cards from S1 to S6, S3 electives, later scenes and a fictional preference round that follow those electives, four stats, a nickname and interests, zh-Hant-HK and English, local save, summary and restart. New games use the full standard length.
+Included: year cards from S1 to S6, S3 electives, later scenes and a fictional preference round that follow those electives, four stats, a nickname and interests, zh-Hant-HK and English, local save, summary and restart. Four milestone pauses can keep one line each, or be skipped; written lines are quoted on the summary. New games use the full standard length.
 
 Not included: accounts, multiplayer, real school data, a teacher dashboard, or past papers. The year-card structure is a common life-sim shape. The writing, school, courses and interface are original.
 

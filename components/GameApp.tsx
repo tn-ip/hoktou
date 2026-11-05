@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { copy } from "@/content/copy";
+import { clipReflection, REFLECTION_MAX, REFLECTION_PROMPTS, reflectionActions } from "@/content/reflections";
 import { endingView, offerView, pathLine } from "@/content/endings";
 import { INTERESTS, seedProfile } from "@/content/interests";
 import { programmeById, PROGRAMMES } from "@/content/programmes";
@@ -27,14 +28,15 @@ import {
   outlookOf,
   programmeScore,
   rankTarget,
+  resolveReflection,
   sceneView,
   setElectiveDraft,
   setRanking,
 } from "@/lib/engine";
 import { clearRun, loadLang, loadRun, saveLang, saveRun } from "@/lib/storage";
 import { tx } from "@/lib/text";
-import type { ElectiveId, InterestId, Lang, MathModule, RunState } from "@/lib/types";
-import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
+import type { ElectiveId, InterestId, Lang, MathModule, ReflectionId, RunState } from "@/lib/types";
+import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, ReflectionQuotes, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
 
 export function GameApp() {
   const [ready, setReady] = useState(false);
@@ -70,7 +72,7 @@ export function GameApp() {
     document.title = lang === "zh" ? "學途" : "Hoktou";
   }, [ready, run, saved, lang]);
 
-  const focusKey = `${run?.phase ?? "title"}:${run?.sceneId ?? ""}:${run?.log.length ?? 0}`;
+  const focusKey = `${run?.phase ?? "title"}:${run?.sceneId ?? ""}:${run?.log.length ?? 0}:${run?.pause ?? ""}`;
   useEffect(() => {
     if (!ready) return;
     headingRef.current?.focus();
@@ -145,7 +147,7 @@ export function GameApp() {
     <div className="app" data-ready="yes">
       <div className="shell">
         {run ? (
-          <div className="play" data-testid="phase" data-phase={run.phase}>
+          <div className="play" data-testid="phase" data-phase={run.phase} data-pause={run.pause ?? ""}>
             <aside className="side">
               <div className="brandrow">
                 <div>
@@ -163,8 +165,17 @@ export function GameApp() {
               <StatMeters stats={run.stats} delta={run.lastEffects} lang={lang} />
             </aside>
             <main className="stage">
-              {run.phase === "scene" ? <SceneCard run={run} lang={lang} headingRef={headingRef} onChoose={(id) => setRun(applyChoice(run, id))} /> : null}
-              {run.phase === "electives" ? (
+              {run.pause ? (
+                <PauseCard
+                  key={run.pause}
+                  id={run.pause}
+                  lang={lang}
+                  headingRef={headingRef}
+                  onResolve={(text) => setRun(resolveReflection(run, text))}
+                />
+              ) : null}
+              {!run.pause && run.phase === "scene" ? <SceneCard run={run} lang={lang} headingRef={headingRef} onChoose={(id) => setRun(applyChoice(run, id))} /> : null}
+              {!run.pause && run.phase === "electives" ? (
                 <ElectiveCard
                   run={run}
                   lang={lang}
@@ -199,7 +210,7 @@ export function GameApp() {
                   onRevise={clearDilemmas}
                 />
               ) : null}
-              {run.phase === "ranking" ? (
+              {!run.pause && run.phase === "ranking" ? (
                 <RankingCard
                   run={run}
                   lang={lang}
@@ -208,13 +219,13 @@ export function GameApp() {
                   onConfirm={() => setRun(confirmRanking(run, run.ranking))}
                 />
               ) : null}
-              {run.phase === "offer" ? (
+              {!run.pause && run.phase === "offer" ? (
                 <OfferCard run={run} lang={lang} headingRef={headingRef} onNext={() => setRun(advancePhase(run))} />
               ) : null}
-              {run.phase === "epilogue" ? (
+              {!run.pause && run.phase === "epilogue" ? (
                 <EpilogueCard run={run} lang={lang} headingRef={headingRef} onNext={() => setRun(advancePhase(run))} />
               ) : null}
-              {run.phase === "summary" ? (
+              {!run.pause && run.phase === "summary" ? (
                 <SummaryCard
                   run={run}
                   lang={lang}
@@ -388,6 +399,67 @@ function TitleScreen({
       </ul>
       <p className="same">{tx(lang, copy.sameChoices)}</p>
     </section>
+  );
+}
+
+function PauseCard({
+  id,
+  lang,
+  headingRef,
+  onResolve,
+}: {
+  id: ReflectionId;
+  lang: Lang;
+  headingRef: RefObject<HTMLHeadingElement | null>;
+  onResolve: (text: string | null) => void;
+}) {
+  const prompt = REFLECTION_PROMPTS[id];
+  const [draft, setDraft] = useState("");
+  const kept = clipReflection(draft);
+  return (
+    <article className="card pause-card" data-testid="pause" data-pause={id} aria-labelledby="pause-title">
+      <p className="kicker">{tx(lang, prompt.kicker)}</p>
+      <h1 id="pause-title" ref={headingRef} tabIndex={-1} data-testid="card-title">
+        {tx(lang, prompt.title)}
+      </h1>
+      <p className="prose">{tx(lang, prompt.body)}</p>
+      <textarea
+        id="pause-line"
+        data-testid="pause-text"
+        value={draft}
+        rows={4}
+        maxLength={REFLECTION_MAX}
+        placeholder={tx(lang, prompt.placeholder)}
+        aria-labelledby="pause-title"
+        aria-describedby="pause-note pause-count"
+        autoComplete="off"
+        enterKeyHint="done"
+        onChange={(event) => {
+          const next = event.target.value.replace(/[\r\n]+/g, "");
+          setDraft(Array.from(next).slice(0, REFLECTION_MAX).join(""));
+        }}
+      />
+      <p id="pause-note" className="note">
+        {tx(lang, reflectionActions.note)}
+      </p>
+      <p id="pause-count" className="pause-count" data-testid="pause-count">
+        {Array.from(draft).length}/{REFLECTION_MAX}
+      </p>
+      <button
+        type="button"
+        className="primary"
+        data-testid="pause-write"
+        disabled={kept.length === 0}
+        onClick={() => onResolve(draft)}
+      >
+        {tx(lang, reflectionActions.write)}
+        <span>{tx(lang, reflectionActions.writeHint)}</span>
+      </button>
+      <button type="button" className="ghost" data-testid="pause-skip" onClick={() => onResolve(null)}>
+        {tx(lang, reflectionActions.skip)}
+        <span>{tx(lang, reflectionActions.skipHint)}</span>
+      </button>
+    </article>
   );
 }
 
@@ -836,6 +908,7 @@ function SummaryCard({
         {" · "}
         {tx(lang, copy.school)}
       </p>
+      <ReflectionQuotes run={run} lang={lang} />
       <h2>{tx(lang, copy.electivesHeading)}</h2>
       <p>
         {joinElectives(run.electives, lang)}

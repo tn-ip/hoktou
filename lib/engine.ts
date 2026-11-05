@@ -1,4 +1,5 @@
 import { BASE_STATS, normalizeInterests, seedProfile } from "@/content/interests";
+import { clipReflection } from "@/content/reflections";
 import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
 import { PROGRAMMES, programmeById, type Programme } from "@/content/programmes";
 import { applyAbilityDelta, joinElectives, mathLabel, startAbilities } from "@/content/subjects";
@@ -12,6 +13,7 @@ import type {
   Outlook,
   Pace,
   Phase,
+  ReflectionId,
   RunState,
   SceneCtx,
   StartProfile,
@@ -145,7 +147,7 @@ export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProf
   const interests = normalizeInterests(profile.interests);
   const seeded = seedProfile(interests);
   return {
-    version: 1,
+    version: 2,
     pace,
     lang,
     nickname: (profile.nickname ?? "").trim().slice(0, 16),
@@ -165,11 +167,22 @@ export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProf
     lastEcho: null,
     lastEffects: null,
     lastAbilities: null,
+    reflections: [],
+    pause: null,
   };
 }
 
 export function visibleLife(pace: Pace): Beat[] {
   return LIFE_PLAYLIST.filter((beat) => pace === "standard" || beat.pace === "all");
+}
+
+function assertNoPause(run: RunState): void {
+  if (run.pause) throw new Error(`Pause ${run.pause} is open`);
+}
+
+function openPause(run: RunState, id: ReflectionId): RunState {
+  if (run.reflections.some((item) => item.id === id)) return run;
+  return { ...run, pause: id };
 }
 
 function goAfter(run: RunState, fromSceneId: string): RunState {
@@ -178,10 +191,10 @@ function goAfter(run: RunState, fromSceneId: string): RunState {
   if (index >= 0) {
     for (let i = index + 1; i < list.length; i += 1) {
       const beat = list[i];
-      if (beat.kind === "electives") return { ...run, phase: "electives" };
+      if (beat.kind === "electives") return openPause({ ...run, phase: "electives" }, "s3");
       if (beat.kind === "scene") return { ...run, phase: "scene", sceneId: beat.id };
     }
-    return { ...run, phase: "ranking" };
+    return openPause({ ...run, phase: "ranking" }, "s6");
   }
   const life = visibleLife(run.pace);
   const lifeIndex = life.findIndex((beat) => beat.kind === "scene" && beat.id === fromSceneId);
@@ -194,6 +207,7 @@ function goAfter(run: RunState, fromSceneId: string): RunState {
 }
 
 export function applyChoice(run: RunState, choiceId: string): RunState {
+  assertNoPause(run);
   if (run.phase !== "scene") throw new Error("Not on a scene");
   const scene = sceneById(run.sceneId);
   if (!scene) throw new Error("Missing scene");
@@ -225,7 +239,23 @@ export function applyChoice(run: RunState, choiceId: string): RunState {
       },
     ],
   };
-  return goAfter(next, scene.id);
+  const moved = goAfter(next, scene.id);
+  if (scene.id === "s1-arrival") return openPause(moved, "s1");
+  return moved;
+}
+
+/** Close the open pause. Empty text, or null, is a skip and stores no line. */
+export function resolveReflection(run: RunState, text: string | null): RunState {
+  if (!run.pause) throw new Error("No pause is open");
+  const id = run.pause;
+  const clipped = text === null ? "" : clipReflection(text);
+  const skipped = clipped.length === 0;
+  const prior = Array.isArray(run.reflections) ? run.reflections : [];
+  return {
+    ...run,
+    pause: null,
+    reflections: [...prior.filter((item) => item.id !== id), { id, text: skipped ? "" : clipped, skipped }],
+  };
 }
 
 export function setElectiveDraft(run: RunState, electives: ElectiveId[], mathModule: MathModule): RunState {
@@ -233,6 +263,7 @@ export function setElectiveDraft(run: RunState, electives: ElectiveId[], mathMod
 }
 
 export function confirmElectives(run: RunState, electives: ElectiveId[], mathModule: MathModule): RunState {
+  assertNoPause(run);
   if (run.phase !== "electives") throw new Error("Not choosing electives");
   if (electives.length !== 3 || new Set(electives).size !== 3) throw new Error("Choose three electives");
   const withLog: RunState = {
@@ -262,7 +293,7 @@ export function confirmElectives(run: RunState, electives: ElectiveId[], mathMod
     const beat = list[i];
     if (beat.kind === "scene") return { ...withLog, phase: "scene", sceneId: beat.id };
   }
-  return { ...withLog, phase: "ranking" };
+  return openPause({ ...withLog, phase: "ranking" }, "s6");
 }
 
 export function setRanking(run: RunState, ranking: string[]): RunState {
@@ -373,6 +404,7 @@ export function resolveOffer(run: RunState): Pick<RunState, "offerId" | "offerKi
 }
 
 export function confirmRanking(run: RunState, ranking: string[]): RunState {
+  assertNoPause(run);
   if (run.phase !== "ranking") throw new Error("Not ranking");
   const need = rankTarget(run.pace);
   if (ranking.length !== need) throw new Error(`Rank ${need} courses`);
@@ -393,12 +425,16 @@ export function confirmRanking(run: RunState, ranking: string[]): RunState {
 }
 
 export function advancePhase(run: RunState): RunState {
+  assertNoPause(run);
   if (run.phase === "offer") {
     const firstLife = visibleLife(run.pace).find((beat) => beat.kind === "scene");
     if (firstLife && firstLife.kind === "scene") {
-      return { ...run, phase: "scene", sceneId: firstLife.id, lastEcho: null, lastEffects: null, lastAbilities: null };
+      return openPause(
+        { ...run, phase: "scene", sceneId: firstLife.id, lastEcho: null, lastEffects: null, lastAbilities: null },
+        "after",
+      );
     }
-    return { ...run, phase: "epilogue" };
+    return openPause({ ...run, phase: "epilogue" }, "after");
   }
   if (run.phase === "epilogue") return { ...run, phase: "summary" };
   throw new Error(`Cannot advance from ${run.phase}`);
@@ -431,6 +467,8 @@ export function stepOrder(pace: Pace): StepId[] {
 }
 
 export function currentStep(run: RunState): StepId {
+  if (run.pause === "s1") return "S1";
+  if (run.pause === "s3") return "pick";
   if (run.phase === "electives") return "pick";
   if (run.phase === "ranking" || run.phase === "offer" || run.phase === "epilogue" || run.phase === "summary") {
     return "out";
