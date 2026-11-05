@@ -157,8 +157,29 @@ export type StartProfile = {
   interests?: InterestId[];
 };
 
+export type PathwayBand = "work" | "subdegree" | "stretch" | "likely";
+
+export type HousingId = "public" | "hos" | "private" | "village";
+
+export type MoiId = "cmi" | "emi";
+
+export type LeanId = "science" | "arts" | "business" | "sport" | "service";
+
+export type Classmate = {
+  id: string;
+  name: LocaleText;
+  housing: HousingId;
+  moi: MoiId;
+  lean: LeanId;
+  pathway: PathwayBand;
+  personality: LocaleText;
+  electives: LocaleText;
+  listNote: LocaleText;
+  outcome: LocaleText;
+};
+
 export type RunState = {
-  version: 2;
+  version: 3;
   pace: Pace;
   lang: Lang;
   nickname: string;
@@ -182,6 +203,8 @@ export type RunState = {
   reflections: Reflection[];
   /** Set while a milestone pause is waiting. The underlying phase is already the next beat. */
   pause: ReflectionId | null;
+  /** Four fictional classmates from the same September. Narrative only. */
+  classmates: string[];
 };
 
 export type SceneCtx = {

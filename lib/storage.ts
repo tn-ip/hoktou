@@ -1,3 +1,4 @@
+import { classmateById, PATHWAY_BANDS, pickClassmates } from "@/content/classmates";
 import { normalizeInterests } from "@/content/interests";
 import { clipReflection } from "@/content/reflections";
 import { sceneById } from "@/content/scenes";
@@ -94,10 +95,24 @@ function readPause(value: unknown, reflections: Reflection[]): ReflectionId | nu
   return value;
 }
 
-function savedVersion(raw: object): 1 | 2 | null {
+function savedVersion(raw: object): 1 | 2 | 3 | null {
   const version = (raw as { version?: unknown }).version;
-  if (version === 1 || version === 2) return version;
+  if (version === 1 || version === 2 || version === 3) return version;
   return null;
+}
+
+function readClassmates(value: unknown, nickname: string, interests: RunState["interests"]): string[] {
+  if (!Array.isArray(value) || value.length !== 4) return pickClassmates(nickname, interests);
+  const ids = value.filter((id): id is string => typeof id === "string");
+  if (new Set(ids).size !== 4) return pickClassmates(nickname, interests);
+  const mates = ids.flatMap((id) => {
+    const mate = classmateById(id);
+    return mate ? [mate] : [];
+  });
+  if (mates.length !== 4) return pickClassmates(nickname, interests);
+  const bands = new Set(mates.map((mate) => mate.pathway));
+  if (PATHWAY_BANDS.some((band) => !bands.has(band))) return pickClassmates(nickname, interests);
+  return ids;
 }
 
 function readLog(value: unknown): LogEntry[] {
@@ -124,7 +139,7 @@ function readLog(value: unknown): LogEntry[] {
 export function parseRun(raw: unknown): RunState | null {
   if (!raw || typeof raw !== "object") return null;
   const value = raw as Partial<RunState>;
-  // hoktou.v1 keeps the same key. Version 1 saves have no reflections; they load as version 2.
+  // hoktou.v1 keeps the same key. Versions 1 and 2 load as version 3; missing classmates are filled from the nickname and interests.
   if (savedVersion(value) === null) return null;
   if (value.pace !== "fast" && value.pace !== "standard") return null;
   if (value.lang !== "zh" && value.lang !== "en") return null;
@@ -153,12 +168,14 @@ export function parseRun(raw: unknown): RunState | null {
   const sceneId = typeof value.sceneId === "string" ? value.sceneId : "";
   if (value.phase === "scene" && !sceneById(sceneId)) return null;
   const reflections = readReflections((value as { reflections?: unknown }).reflections);
+  const nickname = typeof value.nickname === "string" ? value.nickname.trim().slice(0, 16) : "";
+  const interests = readInterests(value.interests);
   const run: RunState = {
-    version: 2,
+    version: 3,
     pace: value.pace,
     lang: value.lang,
-    nickname: typeof value.nickname === "string" ? value.nickname.trim().slice(0, 16) : "",
-    interests: readInterests(value.interests),
+    nickname,
+    interests,
     phase: value.phase,
     sceneId,
     stats,
@@ -177,6 +194,7 @@ export function parseRun(raw: unknown): RunState | null {
     lastAbilities: readAbilityDelta(value.lastAbilities),
     reflections,
     pause: readPause((value as { pause?: unknown }).pause, reflections),
+    classmates: readClassmates((value as { classmates?: unknown }).classmates, nickname, interests),
   };
   return run;
 }
