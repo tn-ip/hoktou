@@ -36,7 +36,7 @@ import {
 import { clearRun, loadLang, loadRun, saveLang, saveRun } from "@/lib/storage";
 import { tx } from "@/lib/text";
 import type { ElectiveId, InterestId, Lang, MathModule, ReflectionId, RunState } from "@/lib/types";
-import { AbilityBoard, AbilityEcho, continueBlurb, EffectLine, LangToggle, ReflectionQuotes, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
+import { AbilityBoard, AbilityEcho, CohortMargin, continueBlurb, EffectLine, LangToggle, PathwayLineup, ReflectionQuotes, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
 
 export function GameApp() {
   const [ready, setReady] = useState(false);
@@ -163,6 +163,7 @@ export function GameApp() {
               </div>
               <Stepper run={run} lang={lang} />
               <StatMeters stats={run.stats} delta={run.lastEffects} lang={lang} />
+              <CohortMargin run={run} lang={lang} />
             </aside>
             <main className="stage">
               {run.pause ? (
@@ -841,6 +842,7 @@ function OfferCard({
           </li>
         ))}
       </ol>
+      <PathwayLineup run={run} lang={lang} />
       <button type="button" className="primary" data-testid="to-epilogue" onClick={onNext}>
         {tx(lang, copy.toEpilogue)}
       </button>
@@ -924,6 +926,7 @@ function SummaryCard({
       <p>{pathLine(run, lang)}</p>
       <p className="prose">{ending.work}</p>
       <p className="prose">{ending.life}</p>
+      <PathwayLineup run={run} lang={lang} closing />
       <h2>{tx(lang, copy.statsLabel)}</h2>
       <StatMeters stats={run.stats} delta={null} lang={lang} />
       <h2>{tx(lang, copy.timelineHeading)}</h2>

@@ -1,3 +1,4 @@
+import { pickClassmates } from "@/content/classmates";
 import { BASE_STATS, normalizeInterests, seedProfile } from "@/content/interests";
 import { clipReflection } from "@/content/reflections";
 import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
@@ -146,11 +147,12 @@ export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProf
   if (!first || first.kind !== "scene") throw new Error("Playlist has no scene");
   const interests = normalizeInterests(profile.interests);
   const seeded = seedProfile(interests);
+  const nickname = (profile.nickname ?? "").trim().slice(0, 16);
   return {
-    version: 2,
+    version: 3,
     pace,
     lang,
-    nickname: (profile.nickname ?? "").trim().slice(0, 16),
+    nickname,
     interests,
     phase: "scene",
     sceneId: first.id,
@@ -169,6 +171,7 @@ export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProf
     lastAbilities: null,
     reflections: [],
     pause: null,
+    classmates: pickClassmates(nickname, interests),
   };
 }
 

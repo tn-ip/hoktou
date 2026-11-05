@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import { readFileSync } from "node:fs";
 import { copy } from "@/content/copy";
+import { cohortCatalogue } from "@/content/classmates";
 import { reflectionCopy } from "@/content/reflections";
 import { endingView, offerView } from "@/content/endings";
 import { INTERESTS, seedProfile } from "@/content/interests";
@@ -162,7 +163,7 @@ describe("hoktou loop", () => {
   });
 
   it("writes traditional Chinese and English for the static catalogue", () => {
-    const bags = [copy, reflectionCopy, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES, INTERESTS];
+    const bags = [copy, reflectionCopy, cohortCatalogue, CORE_SUBJECTS, ELECTIVES, PRESETS, PROGRAMMES, SCENES, INTERESTS];
     for (const bag of bags) {
       walkLocale(bag, (text, lang, path) => {
         assert.ok(text.trim().length > 0, path);

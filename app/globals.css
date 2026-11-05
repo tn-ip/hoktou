@@ -375,6 +375,87 @@ legend { font-weight: 700; margin-bottom: 8px; }
   gap: 12px;
 }
 
+.cohort, .lineup-block {
+  background: var(--card);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: var(--shadow);
+}
+
+.lineup-block {
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.cohort h2, .lineup-block h2 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+}
+
+.cohort-note, .mate-meta, .mate-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.45;
+}
+
+.cohort ol, .lineup {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.cohort li {
+  display: grid;
+  gap: 2px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+.mate-name, .lineup-name {
+  font-weight: 700;
+}
+
+.lineup-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.lineup li {
+  border-left: 3px solid var(--line);
+  border-radius: 12px;
+  padding: 8px 10px;
+  background: var(--soft);
+}
+
+.lineup li.you {
+  border-left-color: var(--teal);
+  background: var(--chip);
+}
+
+.lineup li p { margin: 2px 0 0; }
+
+.you-chip {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 0 8px;
+  background: var(--teal);
+  color: var(--teal-ink);
+  font-size: 0.78rem;
+  line-height: 1.6;
+}
+
+.lineup-close { margin-top: 12px; }
+
+@media (min-width: 700px) and (max-width: 899px) {
+  .cohort ol { grid-template-columns: 1fr 1fr; }
+  .cohort li:nth-child(-n + 2) { border-top: 0; padding-top: 0; }
+}
+
 .steps {
   list-style: none;
   display: flex;

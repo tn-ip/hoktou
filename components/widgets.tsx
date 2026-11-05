@@ -1,7 +1,22 @@
 // Node tests compile this file with the classic JSX runtime.
 import React from "react";
 import { copy } from "@/content/copy";
+import {
+  classmateStatus,
+  classmatesOf,
+  cohortBeat,
+  cohortHeading,
+  cohortNote,
+  HOUSING_LABEL,
+  LEAN_LABEL,
+  lineupClosing,
+  lineupHeading,
+  lineupOrder,
+  MOI_LABEL,
+  youLabel,
+} from "@/content/classmates";
 import { quoteWrap, REFLECTION_PROMPTS, reflectionHeading, writtenReflections } from "@/content/reflections";
+import { pathwayRows } from "@/lib/cohort";
 import {
   abilityBand,
   abilityBandLabel,
@@ -255,6 +270,58 @@ export function TideArt() {
 
 export function textOf(lang: Lang, value: LocaleText): string {
   return tx(lang, value);
+}
+
+export function CohortMargin({ run, lang }: { run: RunState; lang: Lang }) {
+  const mates = classmatesOf(run.classmates);
+  if (mates.length === 0) return null;
+  const beat = cohortBeat(run);
+  return (
+    <section className="cohort" aria-label={tx(lang, cohortHeading)} data-testid="classmates" data-beat={beat}>
+      <h2>{tx(lang, cohortHeading)}</h2>
+      <p className="cohort-note">{tx(lang, cohortNote)}</p>
+      <ol>
+        {mates.map((mate) => (
+          <li key={mate.id} data-testid={`mate-${mate.id}`}>
+            <span className="mate-name">{tx(lang, mate.name)}</span>
+            <span className="mate-meta">
+              {tx(lang, HOUSING_LABEL[mate.housing])}
+              {" · "}
+              {tx(lang, MOI_LABEL[mate.moi])}
+              {" · "}
+              {tx(lang, LEAN_LABEL[mate.lean])}
+            </span>
+            <span className="mate-status" data-testid={`mate-status-${mate.id}`}>
+              {tx(lang, classmateStatus(mate, beat))}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+}
+
+export function PathwayLineup({ run, lang, closing = false }: { run: RunState; lang: Lang; closing?: boolean }) {
+  const rows = pathwayRows(run, lang);
+  return (
+    <section className="lineup-block" data-testid="pathway-lineup">
+      <h2>{tx(lang, lineupHeading)}</h2>
+      <p className="note">{tx(lang, lineupOrder)}</p>
+      <ol className="lineup">
+        {rows.map((row) => (
+          <li key={row.key} className={row.you ? "you" : undefined} data-testid={row.you ? "lineup-you" : `lineup-${row.key}`} data-band={row.band}>
+            <div className="lineup-name">
+              <strong>{row.name}</strong>
+              {row.you ? <span className="you-chip">{tx(lang, youLabel)}</span> : null}
+            </div>
+            <p className="mate-status">{row.meta}</p>
+            <p>{row.detail}</p>
+          </li>
+        ))}
+      </ol>
+      {closing ? <p className="prose lineup-close">{tx(lang, lineupClosing)}</p> : null}
+    </section>
+  );
 }
 
 export function ReflectionQuotes({ run, lang }: { run: Pick<RunState, "reflections">; lang: Lang }) {

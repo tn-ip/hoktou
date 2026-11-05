@@ -65,7 +65,7 @@ describe("milestone pauses", () => {
   it("gates all four pauses, and a skip stores no line", () => {
     let run = createRun("fast", "zh");
     assert.equal(run.pause, null);
-    assert.equal(run.version, 2);
+    assert.equal(run.version, 3);
     assert.throws(() => resolveReflection(run, null), /No pause is open/);
     run = applyChoice(run, choiceIds(run)[0]);
     assert.equal(run.pause, "s1");
@@ -204,7 +204,7 @@ describe("milestone pauses", () => {
     delete legacy.pause;
     delete legacy.nickname;
     const parsed = parseRun(legacy);
-    assert.equal(parsed?.version, 2);
+    assert.equal(parsed?.version, 3);
     assert.equal(parsed?.nickname, "");
     assert.deepEqual(parsed?.reflections, []);
     assert.equal(parsed?.pause, null);
@@ -215,7 +215,7 @@ describe("milestone pauses", () => {
     const roundTrip = parseRun(JSON.parse(JSON.stringify(paused)));
     assert.equal(roundTrip?.pause, "s1");
     assert.equal(roundTrip?.sceneId, "s2-clubs");
-    assert.equal(roundTrip?.version, 2);
+    assert.equal(roundTrip?.version, 3);
 
     const corrupt = {
       ...paused,
