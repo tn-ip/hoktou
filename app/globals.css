@@ -75,7 +75,7 @@ body {
   }
 }
 
-button, input { font: inherit; color: inherit; }
+button, input, textarea { font: inherit; color: inherit; }
 
 button { cursor: pointer; }
 
@@ -734,6 +734,61 @@ legend { font-weight: 700; margin-bottom: 8px; }
 }
 
 .timeline .year { color: var(--muted); font-size: 0.8rem; }
+
+.pause-card textarea {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  min-height: 132px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: var(--soft);
+  font-size: 1.05rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.pause-card textarea::placeholder {
+  color: var(--muted);
+  opacity: 1;
+}
+
+.pause-count {
+  margin: 4px 0 0;
+  text-align: right;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.pause-card .primary,
+.pause-card .ghost {
+  min-height: 64px;
+}
+
+.quote-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.quote-list blockquote {
+  margin: 0;
+  font-family: var(--font-serif), "Songti TC", "PMingLiU", serif;
+  font-size: 1.25rem;
+  line-height: 1.5;
+}
+
+.quote-list blockquote p { margin: 0; }
+
+.quote-by {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+}
 
 .letter { white-space: normal; }
 

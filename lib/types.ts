@@ -12,6 +12,17 @@ export type Phase =
   | "epilogue"
   | "summary";
 
+/** Milestone pauses. Add an id here later; scoring must keep ignoring this list. */
+export const REFLECTION_IDS = ["s1", "s3", "s6", "after"] as const;
+
+export type ReflectionId = (typeof REFLECTION_IDS)[number];
+
+export type Reflection = {
+  id: ReflectionId;
+  text: string;
+  skipped: boolean;
+};
+
 export type StatKey = "academic" | "curiosity" | "wellbeing" | "social";
 
 export type InterestId =
@@ -147,7 +158,7 @@ export type StartProfile = {
 };
 
 export type RunState = {
-  version: 1;
+  version: 2;
   pace: Pace;
   lang: Lang;
   nickname: string;
@@ -167,6 +178,10 @@ export type RunState = {
   lastEcho: LocaleText | null;
   lastEffects: Partial<Stats> | null;
   lastAbilities: Partial<Abilities> | null;
+  /** Narrative only. Never read by the offer, stats, or electives. */
+  reflections: Reflection[];
+  /** Set while a milestone pause is waiting. The underlying phase is already the next beat. */
+  pause: ReflectionId | null;
 };
 
 export type SceneCtx = {
