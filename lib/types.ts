@@ -150,6 +150,7 @@ export type LogEntry = {
   choiceId: string;
   title: LocaleText;
   choice: LocaleText;
+  effects: Partial<Stats>;
 };
 
 export type StartProfile = {

@@ -893,3 +893,84 @@ legend { font-weight: 700; margin-bottom: 8px; }
 @media (prefers-reduced-motion: reduce) {
   * { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }
+
+.shape-reading {
+  background: var(--soft);
+  border-radius: 18px;
+  padding: 14px;
+}
+
+.shape-radar {
+  display: block;
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  margin: 0 auto 12px;
+}
+
+.shape-axes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.shape-axes li {
+  display: grid;
+  grid-template-columns: 3.2em 1fr 3.2em;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+}
+
+.shape-axes li > span:first-child { text-align: right; }
+.shape-axes li > span:last-child { text-align: left; }
+
+.shape-axis-bar {
+  display: block;
+  height: 8px;
+  background: var(--track);
+  border-radius: 999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.shape-axis-bar i {
+  display: block;
+  height: 100%;
+  background: var(--teal);
+  border-radius: inherit;
+  position: absolute;
+  left: 50%;
+}
+
+.shape-axes li[data-lean="left"] .shape-axis-bar i {
+  left: auto;
+  right: 50%;
+}
+
+.shape-name {
+  margin: 14px 0 0;
+  font-family: var(--font-serif), "Songti TC", serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.shape-sentence {
+  margin: 6px 0 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.happiest-year {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--chip);
+  color: var(--teal-deep);
+  font-size: 0.95rem;
+  text-align: center;
+}
