@@ -128,8 +128,8 @@ describe("hoktou loop", () => {
       beat.kind === "scene" ? beat.id : "",
     );
     assert.deepEqual(fastIds, fast);
-    assert.equal(EXTRA_SCENE_IDS.length, 50);
-    assert.equal(new Set(EXTRA_SCENE_IDS).size, 50);
+    assert.equal(EXTRA_SCENE_IDS.length, 51);
+    assert.equal(new Set(EXTRA_SCENE_IDS).size, 51);
     for (const id of EXTRA_SCENE_IDS) assert.ok(sceneById(id), id);
     const listed = [...PLAYLIST, ...LIFE_PLAYLIST].flatMap((beat) => (beat.kind === "scene" ? [beat.id] : []));
     for (const id of EXTRA_SCENE_IDS) assert.ok(listed.includes(id), id);
@@ -253,7 +253,7 @@ describe("hoktou loop", () => {
     const scienceCard = sceneViewAt(science, "s5-showcase");
     assert.match(scienceCard, /港灣青少年科學展/);
     assert.equal(science.offerId, "monghoi-phy");
-    assert.equal(science.flags.fair, "prize");
+    assert.equal(science.flags.fair, "shown");
 
     const business = play(
       "fast",
@@ -294,7 +294,7 @@ describe("hoktou loop", () => {
       "none",
       ["monghoi-phy", "harbour-eng", "east-acc"],
     );
-    assert.equal(quiet.offerId, "waterfront-sub-arts");
+    assert.equal(quiet.offerId, null);
     assert.equal(PROGRAMMES.find((item) => item.id === "monghoi-med")?.eligible(quiet), false);
 
     const restedScience = play(
@@ -313,7 +313,7 @@ describe("hoktou loop", () => {
       "m2",
       ["monghoi-med", "monghoi-phy", "harbour-eng"],
     );
-    assert.equal(restedScience.offerId, "monghoi-med");
+    assert.equal(restedScience.offerId, "monghoi-phy");
 
     const cram = play(
       "fast",
@@ -402,13 +402,13 @@ describe("hoktou loop", () => {
     let run = createRun("standard", "zh");
     run = { ...run, sceneId: "s1-ab-olympiad", phase: "scene" };
     run = applyChoice(run, "s1-ab-olympiad-go");
-    assert.equal(run.abilities.math, 60);
-    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +10");
+    assert.equal(run.abilities.math, 51);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +1");
     run = { ...run, sceneId: "s2-ab-profit", phase: "scene" };
     run = applyChoice(run, "s2-ab-profit-work");
-    assert.equal(run.abilities.math, 80);
-    assert.equal(run.abilities.bafs, 60);
-    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +20、企業、會計與財務概論能力 +10");
+    assert.equal(run.abilities.math, 53);
+    assert.equal(run.abilities.bafs, 51);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +2、企業、會計與財務概論能力 +1");
     const ordered = PLAYLIST.flatMap((beat) => (beat.kind === "scene" ? [beat.id] : []));
     const positions = ABILITY_SCENE_IDS.map((id) => ordered.indexOf(id));
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
@@ -485,10 +485,10 @@ describe("hoktou loop", () => {
     assert.equal(run.pace, "standard");
     assert.equal(run.nickname, "家琪");
     assert.deepEqual(run.interests, ["science", "service"]);
-    assert.equal(run.abilities.phy, 60);
-    assert.equal(run.abilities.chem, 60);
-    assert.equal(run.abilities.bio, 60);
-    assert.equal(run.abilities.cs, 60);
+    assert.equal(run.abilities.phy, 52);
+    assert.equal(run.abilities.chem, 52);
+    assert.equal(run.abilities.bio, 52);
+    assert.equal(run.abilities.cs, 52);
     assert.equal(run.abilities.pe, 50);
     assert.equal(run.abilities.chi, 50);
     assert.equal(lifePoint(run.stats.academic), 6);
@@ -498,9 +498,9 @@ describe("hoktou loop", () => {
     assert.equal(lifePoint(START_STATS.academic), 5);
     assert.equal(lifePoint(START_STATS.wellbeing), 6);
     const both = seedProfile(["business", "computer"]);
-    assert.equal(both.abilities.math, 70);
-    assert.equal(both.abilities.ict, 60);
-    assert.equal(both.abilities.econ, 60);
+    assert.equal(both.abilities.math, 54);
+    assert.equal(both.abilities.ict, 53);
+    assert.equal(both.abilities.econ, 52);
     const old = JSON.parse(JSON.stringify(createRun("fast", "en"))) as Record<string, unknown>;
     delete old.nickname;
     delete old.interests;
@@ -569,7 +569,7 @@ describe("hoktou loop", () => {
     const business = seedProfile(["business", "computer"]);
     const biz = suggestElectives(business.abilities, ["business", "computer"]);
     assert.deepEqual(biz.electives, ["econ", "bafs", "ict"]);
-    assert.equal(biz.math, "m2");
+    assert.equal(biz.math, "none");
     const letters = seedProfile(["humanities", "art"]);
     assert.deepEqual(suggestElectives(letters.abilities, ["humanities", "art"]).electives, ["hist", "chist", "va"]);
     const chart = { ...startAbilities(), va: 90, phy: 60, chem: 60, bio: 60, pe: 60 };

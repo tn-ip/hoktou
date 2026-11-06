@@ -10,13 +10,7 @@ function choice(
   ability: Partial<Abilities>,
   effects: Partial<Stats>,
 ): Choice {
-  return {
-    id,
-    label: line(zh, en),
-    detail: line(detailZh, detailEn),
-    effects,
-    ability,
-  };
+  return { id, label: line(zh, en), detail: line(detailZh, detailEn), effects, ability };
 }
 
 function card(
@@ -32,15 +26,7 @@ function card(
   bodyEn: string,
   options: Choice[],
 ): Scene {
-  return {
-    id,
-    year,
-    kicker: line(kickerZh, kickerEn),
-    title: line(titleZh, titleEn),
-    focus: line(focusZh, focusEn),
-    body: () => line(bodyZh, bodyEn),
-    choices: () => options,
-  };
+  return { id, year, kicker: line(kickerZh, kickerEn), title: line(titleZh, titleEn), focus: line(focusZh, focusEn), body: () => line(bodyZh, bodyEn), choices: () => options };
 }
 
 export const ABILITY_SCENES: Scene[] = [
@@ -62,7 +48,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the olympiad class",
         "你用一個星期六換幾道要慢慢想的題。",
         "You trade a Saturday for questions that need time.",
-        { math: 10 },
+        { math: 1 },
         { academic: 3, curiosity: 2, wellbeing: -2 },
       ),
       choice(
@@ -71,7 +57,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Stay home and rest",
         "睡眠回來了，數學這週沒有加練。",
         "Sleep comes back. Mathematics gets no extra practice this week.",
-        { math: -10 },
+        { math: -1 },
         { wellbeing: 3, academic: -1 },
       ),
     ],
@@ -94,7 +80,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Help set up and read the measurements",
         "你的手記得藥品的氣味，也記得線路要先對哪一端。",
         "Your hands remember the chemicals, and which end of the wire comes first.",
-        { phy: 10, chem: 10 },
+        { phy: 1, chem: 1 },
         { curiosity: 3, academic: 2, wellbeing: -1 },
       ),
       choice(
@@ -126,7 +112,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the English debate",
         "你要站起來，用英文把一個理由說完。",
         "You stand up and finish one reason in English.",
-        { eng: 10 },
+        { eng: 1 },
         { academic: 2, social: 2, wellbeing: -1 },
       ),
       choice(
@@ -135,7 +121,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Stay and revise Chinese",
         "你把一段寫順，讀出聲來聽。",
         "You smooth one paragraph and read it aloud.",
-        { chi: 10 },
+        { chi: 1 },
         { academic: 2, wellbeing: 1 },
       ),
     ],
@@ -158,7 +144,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the history wing",
         "你在一張舊地圖和一段中國史年表前面停了很久。",
         "You stop for a long time at an old map and a Chinese-history timeline.",
-        { hist: 10, chist: 10 },
+        { hist: 1, chist: 1 },
         { curiosity: 3, academic: 1 },
       ),
       choice(
@@ -167,7 +153,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the science wing",
         "你把模型轉了三次，才看懂它在說明什麼。",
         "You turn the model three times before you see what it is explaining.",
-        { phy: 10, chem: 10, bio: 10 },
+        { phy: 1, chem: 1, bio: 1 },
         { curiosity: 3, academic: 1 },
       ),
     ],
@@ -190,7 +176,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Join the computer club",
         "你開始認得一塊板子上的名字。",
         "You start to recognise the names on a board.",
-        { ict: 10 },
+        { ict: 1 },
         { curiosity: 3, academic: 1 },
       ),
       choice(
@@ -199,7 +185,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Join the visual-arts club",
         "你留下一張還沒有畫完的草稿。",
         "You leave a sketch that is not finished yet.",
-        { va: 10 },
+        { va: 1 },
         { curiosity: 3, wellbeing: 1 },
       ),
     ],
@@ -222,7 +208,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Take the mathematics class",
         "你把一類題型做順。",
         "You get one kind of question to sit cleanly.",
-        { math: 10 },
+        { math: 1 },
         { academic: 3, wellbeing: -1 },
       ),
       choice(
@@ -231,7 +217,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the economics introduction",
         "你第一次用「成本」來說一件日常的事。",
         "You use the word cost for an ordinary thing for the first time.",
-        { econ: 10 },
+        { econ: 1 },
         { curiosity: 3, academic: 1 },
       ),
     ],
@@ -254,7 +240,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go on the geography field trip",
         "你把看到的岸線畫進小簿。",
         "You draw the shoreline you see into the notebook.",
-        { geog: 10 },
+        { geog: 1 },
         { curiosity: 3, wellbeing: 1, academic: 1 },
       ),
       choice(
@@ -263,7 +249,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Stay at school and revise",
         "課室很靜。地理那一頁你沒有走到現場。",
         "The classroom is quiet. You do not see the geography page in person.",
-        { geog: -10 },
+        { geog: -1 },
         { academic: 3, curiosity: -1 },
       ),
     ],
@@ -286,7 +272,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Take your event seriously",
         "你跑完，沒有跟別人比名次。",
         "You finish. You do not race the ranking.",
-        { pe: 10 },
+        { pe: 1 },
         { wellbeing: 3, academic: -1 },
       ),
       choice(
@@ -295,7 +281,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Coast, and dodge what you can",
         "你少出了不少力，也少了一點練習。",
         "You spend less effort, and get less practice.",
-        { pe: -10 },
+        { pe: -1 },
         { wellbeing: 1, social: 1 },
       ),
     ],
@@ -318,7 +304,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Do it yourself",
         "你重做了一次不穩的讀數。",
         "You repeat one reading that would not settle.",
-        { chem: 10 },
+        { chem: 1 },
         { curiosity: 2, academic: 2, wellbeing: -1 },
       ),
       choice(
@@ -327,7 +313,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Copy the next group's data",
         "本子很齊。你知道那些數字不是你的。",
         "The page looks tidy. You know the numbers are not yours.",
-        { chem: -10 },
+        { chem: -1 },
         { academic: -1, curiosity: -2, wellbeing: 1 },
       ),
     ],
@@ -350,7 +336,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Build the circuit yourself",
         "燈亮的那一下，你記得線接在哪。",
         "When the lamp lights, you remember where the wire sits.",
-        { phy: 10 },
+        { phy: 1 },
         { curiosity: 3, academic: 2 },
       ),
       choice(
@@ -359,7 +345,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Watch the clip and copy the diagram",
         "圖是對的。手沒有試過。",
         "The diagram is correct. Your hands did not try it.",
-        { phy: -10 },
+        { phy: -1 },
         { academic: 1, curiosity: -1 },
       ),
     ],
@@ -382,7 +368,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Stay and look",
         "你把一種葉子的邊緣畫了下來。",
         "You draw the edge of one leaf.",
-        { bio: 10 },
+        { bio: 1 },
         { curiosity: 3, wellbeing: 1 },
       ),
       choice(
@@ -391,7 +377,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Skip it and leave",
         "你早了二十分鐘。花槽裡有什麼，你沒有看見。",
         "You gain twenty minutes. You do not see what is in the planter.",
-        { bio: -10 },
+        { bio: -1 },
         { wellbeing: 2, curiosity: -1 },
       ),
     ],
@@ -414,7 +400,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the water rockets",
         "你要算角度，也要追著它落地的地方。",
         "You have to judge the angle, and where it comes down.",
-        { phy: 10 },
+        { phy: 1 },
         { curiosity: 3, wellbeing: 1 },
       ),
       choice(
@@ -423,7 +409,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go to the chemistry show",
         "你看懂了一個變色之前的步驟。",
         "You follow one step that comes before the colour changes.",
-        { chem: 10 },
+        { chem: 1 },
         { curiosity: 3, academic: 1 },
       ),
     ],
@@ -446,7 +432,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Keep the books",
         "你把每筆收支寫下來，收市時對得上。",
         "You write each amount down. At the close, it agrees.",
-        { bafs: 10 },
+        { bafs: 1 },
         { academic: 2, social: 1 },
       ),
       choice(
@@ -455,7 +441,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Go out and sell",
         "你要向路過的人說這件東西為什麼值這個價。",
         "You tell people walking past why the thing is worth the price.",
-        { econ: 10 },
+        { econ: 1 },
         { social: 3, curiosity: 1 },
       ),
     ],
@@ -478,7 +464,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Sit with finance",
         "你追著一欄數字，看它怎樣變成利潤。",
         "You follow a column and see how it becomes profit.",
-        { bafs: 10 },
+        { bafs: 1 },
         { academic: 2, curiosity: 1 },
       ),
       choice(
@@ -487,7 +473,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Sit with the market",
         "你要決定向誰賣、賣什麼。",
         "You decide who you are selling to, and what.",
-        { econ: 10 },
+        { econ: 1 },
         { social: 2, curiosity: 2 },
       ),
     ],
@@ -510,7 +496,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Listen properly",
         "你追問那筆錢如果虧了會怎樣。",
         "You ask what happens to the money if it loses.",
-        { econ: 10, bafs: 10 },
+        { econ: 1, bafs: 1 },
         { curiosity: 2, social: 2, academic: 1 },
       ),
       choice(
@@ -519,7 +505,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Scroll the phone",
         "桌上的話你沒有聽完。",
         "You do not hear the explanation through.",
-        { econ: -10, bafs: -10 },
+        { econ: -1, bafs: -1 },
         { wellbeing: 1, curiosity: -1, social: -1 },
       ),
     ],
@@ -542,7 +528,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Work it through",
         "你算完利潤，也看見帳是怎樣立起來的。",
         "You finish the profit, and you see how the books stand up.",
-        { math: 20, bafs: 10 },
+        { math: 2, bafs: 1 },
         { academic: 3, curiosity: 2, wellbeing: -1 },
       ),
       choice(
@@ -551,7 +537,7 @@ export const ABILITY_SCENES: Scene[] = [
         "Leave the question",
         "前面的題交得出。這一題你沒有碰。",
         "The earlier questions can be handed in. You do not touch this one.",
-        { math: -10 },
+        { math: -1 },
         { wellbeing: 2, academic: -1 },
       ),
     ],

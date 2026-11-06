@@ -71,14 +71,14 @@ const STAT_BOOST: Record<InterestId, Partial<Stats>> = {
 };
 
 const ABILITY_BOOST: Record<InterestId, Partial<Abilities>> = {
-  science: { phy: 10, chem: 10, bio: 10 },
-  humanities: { hist: 10, chist: 10, geog: 10 },
-  art: { va: 10 },
-  sport: { pe: 10 },
-  computer: { ict: 10, math: 10 },
-  business: { econ: 10, bafs: 10, math: 10 },
-  language: { chi: 10, eng: 10 },
-  service: { cs: 10 },
+  science: { phy: 2, chem: 2, bio: 2 },
+  humanities: { hist: 2, chist: 2, geog: 2 },
+  art: { va: 3 },
+  sport: { pe: 3 },
+  computer: { ict: 3, math: 2 },
+  business: { econ: 2, bafs: 2, math: 2 },
+  language: { chi: 2, eng: 2 },
+  service: { cs: 2 },
 };
 
 function clampStat(value: number): number {

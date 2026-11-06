@@ -22,6 +22,7 @@ import type {
   Stats,
   StepId,
   StepStatus,
+  SubjectId,
 } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
 import { line, statLabel } from "@/lib/text";
@@ -359,15 +360,18 @@ const CS_BOOSTS = new Set(["policy", "humanities", "teaching"]);
 
 export function abilityLift(run: Pick<RunState, "abilities" | "electives">, programme: Programme): number {
   const abilities = run.abilities ?? startAbilities();
+  function liftFor(id: SubjectId): number {
+    return Math.round(((abilities[id] ?? ABILITY_START) - ABILITY_START) / 10);
+  }
   let lift = 0;
   for (const id of programme.electives) {
     if (!run.electives.includes(id)) continue;
-    lift += (abilities[id] ?? ABILITY_START) - ABILITY_START;
+    lift += liftFor(id);
   }
-  if (run.electives.includes("pe") && programme.boost === "teaching") lift += (abilities.pe ?? ABILITY_START) - ABILITY_START;
-  if (programme.math || MATH_BOOSTS.has(programme.boost)) lift += (abilities.math ?? ABILITY_START) - ABILITY_START;
-  if (CS_BOOSTS.has(programme.boost)) lift += (abilities.cs ?? ABILITY_START) - ABILITY_START;
-  lift += Math.round((((abilities.chi ?? ABILITY_START) - ABILITY_START) + ((abilities.eng ?? ABILITY_START) - ABILITY_START)) / 2);
+  if (run.electives.includes("pe") && programme.boost === "teaching") lift += liftFor("pe");
+  if (programme.math || MATH_BOOSTS.has(programme.boost)) lift += liftFor("math");
+  if (CS_BOOSTS.has(programme.boost)) lift += liftFor("cs");
+  lift += Math.round((liftFor("chi") + liftFor("eng")) / 2);
   return Math.max(-12, Math.min(12, lift));
 }
 
