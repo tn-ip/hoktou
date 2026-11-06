@@ -637,7 +637,11 @@ legend { font-weight: 700; margin-bottom: 8px; }
 
 .subject small, .prog small, .note, .meta { display: block; color: var(--muted); font-size: 0.84rem; }
 
-.ability-board-wrap { margin-top: 4px; }
+.ability-board-wrap { margin-top: 4px; margin-bottom: 12px; }
+
+.choices { padding: 8px 0 18px; }
+
+.choice { scroll-margin-top: 80px; }
 
 .ability-board h3 {
   margin: 12px 0 8px;
@@ -679,7 +683,7 @@ legend { font-weight: 700; margin-bottom: 8px; }
   align-items: baseline;
 }
 
-.ability-top strong { font-size: 0.95rem; line-height: 1.25; }
+.ability-top strong { font-size: 0.95rem; line-height: 1.25; word-break: break-word; }
 
 .ability-cell .score {
   font-variant-numeric: tabular-nums;
@@ -745,7 +749,7 @@ legend { font-weight: 700; margin-bottom: 8px; }
 
   .elective-layout .ability-grid { grid-template-columns: 1fr 1fr; }
 
-  .ability-board-wrap {
+  .elective-layout .ability-board-wrap {
     position: sticky;
     top: 8px;
     max-height: calc(100vh - 24px);
@@ -973,4 +977,24 @@ legend { font-weight: 700; margin-bottom: 8px; }
   color: var(--teal-deep);
   font-size: 0.95rem;
   text-align: center;
+}
+
+@media print {
+  @page { margin: 14mm; }
+  body {
+    background: #fff !important;
+    color: #1b2422 !important;
+  }
+  .side,
+  footer.fineprint,
+  .no-print {
+    display: none !important;
+  }
+  .summary-card {
+    box-shadow: none !important;
+    background: #fff !important;
+    break-inside: avoid;
+  }
+  .summary-card::before { display: none; }
+  .play { display: block; }
 }

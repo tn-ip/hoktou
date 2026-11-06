@@ -185,17 +185,17 @@ const STAT_REASON: Record<string, (point: number) => LocaleText> = {
 };
 
 function subjectReason(subject: SubjectId, score: number): LocaleText {
-  const zh = subjectName(subject, "zh");
+  const zh = subjectName(subject, "zh", "name");
   const en = subjectName(subject, "en", "name");
   return line(
-    `你${zh}只有 ${score}／10，未夠底入呢科工作坊。今次去不成，能力加分冇咗。`,
-    `${en} is ${score}/10, so this subject workshop is closed. The ability gain is lost.`,
+    `你${zh}只有 ${score}／100，未夠底入呢科工作坊。今次去不成，能力加分冇咗。`,
+    `${en} is ${score}/100, so this subject workshop is closed. The ability gain is lost.`,
   );
 }
 
 function subjectsWeakReason(ids: SubjectId[], abilities: SceneCtx["abilities"]): LocaleText {
-  const zh = ids.map((id) => `${subjectName(id, "zh")} ${abilities[id]}／10`).join("、");
-  const en = ids.map((id) => `${subjectName(id, "en", "name")} ${abilities[id]}/10`).join(", ");
+  const zh = ids.map((id) => `${subjectName(id, "zh", "name")} ${abilities[id]}／100`).join("、");
+  const en = ids.map((id) => `${subjectName(id, "en", "name")} ${abilities[id]}/100`).join(", ");
   return line(
     `你${zh}，未夠底入呢個工作坊。今次去不成，能力加分冇咗。`,
     `${en} are too low for this workshop. The ability gain is lost.`,

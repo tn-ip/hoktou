@@ -103,7 +103,6 @@ function AbilityCell({
   const score = abilities[id];
   const band = abilityBand(score);
   const name = subjectName(id, lang, "name");
-  const short = subjectName(id, lang, "short");
   return (
     <div
       className={`ability-cell ${band}${picked ? " picked" : ""}${recommended ? " recommended" : ""}`}
@@ -113,23 +112,22 @@ function AbilityCell({
     >
       <div className="ability-top">
         <strong>
-          {short}
+          {name}
           {recommended ? <span className="recommend-badge">{tx(lang, copy.suggestedBadge)}</span> : null}
         </strong>
         <span className="score">
           {score}
-          <small>/10</small>
+          <small>/100</small>
         </span>
       </div>
-      {name !== short ? <span className="ability-full">{name}</span> : null}
       <span className="ability-band">{abilityBandLabel(score, lang)}</span>
       <div className="pips" aria-hidden="true">
         {Array.from({ length: 10 }, (_, index) => (
-          <i key={index} className={index < score ? "on" : ""} />
+          <i key={index} className={index < score / 10 ? "on" : ""} />
         ))}
       </div>
       <span className="sr">
-        {name} {score}/10 {abilityBandLabel(score, lang)}
+        {name} {score}/100 {abilityBandLabel(score, lang)}
         {picked ? (lang === "zh" ? "，已選" : ", chosen") : ""}
       </span>
     </div>

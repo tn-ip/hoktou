@@ -160,8 +160,8 @@ export const PRESETS: Preset[] = [
 export function electiveIntro(flags: Flags, lang: Lang): string {
   const base =
     lang === "zh"
-      ? "必修仍在時間表上：中文、英文、數學、通識／公民與社會發展。能力表列出全部科目，1 到 10。下面選三個選修，表會留在畫面上。提醒只在你按交表時出現，你可以堅持，也可以返回再改。延伸數學可另選，不算進這三科。"
-      : "Core subjects stay on the timetable: Chinese, English, mathematics, and Citizenship and Social Development. The board lists every subject from 1 to 10. Choose three electives below; the board stays on screen. Reminders appear only when you hand the form in. You can keep the mix or go back and change it. Extended maths is optional and does not count as one of the three.";
+      ? "必修仍在時間表上：中文、英文、數學、通識／公民與社會發展。能力表列出全部科目，10 到 100。下面選三個選修，表會留在畫面上。提醒只在你按交表時出現，你可以堅持，也可以返回再改。延伸數學可另選，不算進這三科。"
+      : "Core subjects stay on the timetable: Chinese, English, mathematics, and Citizenship and Social Development. The board lists every subject from 10 to 100. Choose three electives below; the board stays on screen. Reminders appear only when you hand the form in. You can keep the mix or go back and change it. Extended maths is optional and does not count as one of the three.";
   const extra: string[] = [];
   if (lang === "zh") {
     if (flags.lean === "science") extra.push("簡介會那天，你在理科攤位停得最久。");
@@ -271,12 +271,12 @@ export const SUBJECTS: SubjectInfo[] = [
 
 export const SUBJECT_IDS: SubjectId[] = SUBJECTS.map((item) => item.id);
 
-export const ABILITY_MIN = 1;
-export const ABILITY_MAX = 10;
-export const ABILITY_START = 5;
-export const ABILITY_WEAK = 4;
-export const ABILITY_FAIR = 6;
-export const ABILITY_STEADY = 7;
+export const ABILITY_MIN = 10;
+export const ABILITY_MAX = 100;
+export const ABILITY_START = 50;
+export const ABILITY_WEAK = 40;
+export const ABILITY_FAIR = 60;
+export const ABILITY_STEADY = 70;
 
 const SCIENCE_ELECTIVES: ElectiveId[] = ["phy", "chem", "bio"];
 
@@ -310,13 +310,17 @@ export function applyAbilityDelta(current: Abilities, delta: Partial<Abilities> 
   return next;
 }
 
-export function readAbilities(value: unknown): Abilities {
+export function readAbilities(value: unknown, oldScale = false): Abilities {
   const abilities = startAbilities();
   if (!value || typeof value !== "object") return abilities;
   const record = value as Partial<Record<SubjectId, unknown>>;
   for (const id of SUBJECT_IDS) {
     const score = record[id];
-    if (typeof score === "number" && !Number.isNaN(score)) abilities[id] = clampAbility(score);
+    if (typeof score === "number" && !Number.isNaN(score)) {
+      let scaled = score;
+      if (oldScale && scaled <= 10) scaled *= 10;
+      abilities[id] = clampAbility(scaled);
+    }
   }
   return abilities;
 }
@@ -350,7 +354,7 @@ export function abilityDeltaLine(delta: Partial<Abilities> | null | undefined, l
     .map((id) => {
       const value = delta[id] as number;
       const signed = value > 0 ? `+${value}` : `${value}`;
-      return lang === "zh" ? `${subjectName(id, "zh")}能力 ${signed}` : `${subjectName(id, "en", "name")} ability ${signed}`;
+      return lang === "zh" ? `${subjectName(id, "zh", "name")}能力 ${signed}` : `${subjectName(id, "en", "name")} ability ${signed}`;
     })
     .join(lang === "zh" ? "、" : ", ");
 }
@@ -361,7 +365,7 @@ export type Dilemma = {
 };
 
 function gapLine(id: ElectiveId): LocaleText {
-  const zh = subjectName(id, "zh");
+  const zh = subjectName(id, "zh", "name");
   const en = subjectName(id, "en", "name");
   return line(
     `${zh}呢科你而家一般啲 — 之後跟堂可能會吃力少少。你仲想堅持，定係想再諗吓？`,
@@ -452,14 +456,14 @@ const INTEREST_ELECTIVES: Record<InterestId, ElectiveId[]> = {
 };
 
 const INTEREST_BONUS: Record<InterestId, Partial<Record<ElectiveId, number>>> = {
-  science: { phy: 2, chem: 2, bio: 2 },
-  humanities: { hist: 2, chist: 2, geog: 2 },
-  business: { econ: 2, bafs: 2, geog: 1 },
-  art: { va: 3 },
-  sport: { pe: 3 },
-  computer: { ict: 3 },
-  language: { hist: 1, chist: 1 },
-  service: { geog: 1 },
+  science: { phy: 20, chem: 20, bio: 20 },
+  humanities: { hist: 20, chist: 20, geog: 20 },
+  business: { econ: 20, bafs: 20, geog: 10 },
+  art: { va: 30 },
+  sport: { pe: 30 },
+  computer: { ict: 30 },
+  language: { hist: 10, chist: 10 },
+  service: { geog: 10 },
 };
 
 export type ElectiveSuggestion = {
@@ -521,13 +525,13 @@ export function seniorAbilityNote(abilities: Abilities, electives: ElectiveId[])
   const zh: string[] = [];
   const en: string[] = [];
   if (steady.length > 0) {
-    const names = steady.map((id) => subjectName(id, "zh")).join("、");
+    const names = steady.map((id) => subjectName(id, "zh", "name")).join("、");
     const namesEn = steady.map((id) => subjectName(id, "en", "name")).join(", ");
     zh.push(`${names}而家較穩，高中可以從這裡起步。`);
     en.push(`${namesEn} ${steady.length > 1 ? "are" : "is"} steadier now, so senior school can start there.`);
   }
   if (weak.length > 0) {
-    const names = weak.map((id) => subjectName(id, "zh")).join("、");
+    const names = weak.map((id) => subjectName(id, "zh", "name")).join("、");
     const namesEn = weak.map((id) => subjectName(id, "en", "name")).join(", ");
     zh.push(`${names}而家一般啲，跟堂要預多啲時間。`);
     en.push(`${namesEn} ${weak.length > 1 ? "are" : "is"} lower for now, so lessons will need more time.`);

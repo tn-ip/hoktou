@@ -93,7 +93,7 @@ function sampleContexts(): SceneCtx[] {
     {
       ...base,
       electives: ["chem", "econ", "geog"],
-      abilities: { ...startAbilities(), chem: 3, math: 3, va: 6, phy: 8, eng: 9 },
+      abilities: { ...startAbilities(), chem: 30, math: 30, va: 60, phy: 80, eng: 90 },
     },
   ];
 }
@@ -391,24 +391,24 @@ describe("hoktou loop", () => {
     assert.equal(arts.offerId, "lion-hist");
   });
 
-  it("tracks subject abilities from 1 to 10 and shows the feedback line", () => {
+  it("tracks subject abilities from 10 to 100 and shows the feedback line", () => {
     const start = startAbilities();
     assert.equal(SUBJECT_IDS.length, 15);
-    assert.deepEqual(Object.values(start), Array(15).fill(5));
-    const topped = applyAbilityDelta({ ...start, math: 10 }, { math: 2 });
-    const floored = applyAbilityDelta({ ...start, pe: 1 }, { pe: -2 });
-    assert.equal(topped.math, 10);
-    assert.equal(floored.pe, 1);
+    assert.deepEqual(Object.values(start), Array(15).fill(50));
+    const topped = applyAbilityDelta({ ...start, math: 100 }, { math: 20 });
+    const floored = applyAbilityDelta({ ...start, pe: 10 }, { pe: -20 });
+    assert.equal(topped.math, 100);
+    assert.equal(floored.pe, 10);
     let run = createRun("standard", "zh");
     run = { ...run, sceneId: "s1-ab-olympiad", phase: "scene" };
     run = applyChoice(run, "s1-ab-olympiad-go");
-    assert.equal(run.abilities.math, 6);
-    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +1");
+    assert.equal(run.abilities.math, 60);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +10");
     run = { ...run, sceneId: "s2-ab-profit", phase: "scene" };
     run = applyChoice(run, "s2-ab-profit-work");
-    assert.equal(run.abilities.math, 8);
-    assert.equal(run.abilities.bafs, 6);
-    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +2、BAFS能力 +1");
+    assert.equal(run.abilities.math, 80);
+    assert.equal(run.abilities.bafs, 60);
+    assert.equal(abilityDeltaLine(run.lastAbilities, "zh"), "數學能力 +20、企業、會計與財務概論能力 +10");
     const ordered = PLAYLIST.flatMap((beat) => (beat.kind === "scene" ? [beat.id] : []));
     const positions = ABILITY_SCENE_IDS.map((id) => ordered.indexOf(id));
     assert.deepEqual(positions, [...positions].sort((a, b) => a - b));
@@ -425,7 +425,7 @@ describe("hoktou loop", () => {
 
   it("warns on confirm and still accepts the mix", () => {
     const base = startAbilities();
-    const weakChem: Abilities = { ...base, chem: 4 };
+    const weakChem: Abilities = { ...base, chem: 40 };
     const gap = electiveDilemmas(weakChem, ["chem", "hist", "geog"]);
     assert.deepEqual(gap.map((item) => item.id), ["gap-chem"]);
     assert.equal(gap[0]?.text.zh, "化學呢科你而家一般啲 — 之後跟堂可能會吃力少少。你仲想堅持，定係想再諗吓？");
@@ -435,18 +435,18 @@ describe("hoktou loop", () => {
     const three = electiveDilemmas(base, ["phy", "chem", "bio"]);
     assert.match(three[0]?.text.zh ?? "", /三科科學/);
 
-    const biz = electiveDilemmas({ ...base, math: 4 }, ["econ", "bafs", "geog"]);
+    const biz = electiveDilemmas({ ...base, math: 40 }, ["econ", "bafs", "geog"]);
     assert.equal(biz.find((item) => item.id === "biz-math")?.text.zh, "經濟／BAFS 好多時要用到數學。你數學暫時弱啲，計數題要預多啲時間。");
 
-    const art = electiveDilemmas({ ...base, va: 6 }, ["econ", "bafs", "geog"]);
+    const art = electiveDilemmas({ ...base, va: 60 }, ["econ", "bafs", "geog"]);
     assert.equal(art.find((item) => item.id === "art-path")?.text.zh, "你視藝唔錯，不過而家組合偏第二邊。家長可能會問出路，你準備點同佢哋傾？");
-    assert.equal(electiveDilemmas({ ...base, va: 6 }, ["va", "ict", "econ"]).some((item) => item.id === "art-path"), false);
+    assert.equal(electiveDilemmas({ ...base, va: 60 }, ["va", "ict", "econ"]).some((item) => item.id === "art-path"), false);
 
-    const both = electiveDilemmas({ ...base, math: 7, phy: 7 }, ["hist", "geog", "va"]);
+    const both = electiveDilemmas({ ...base, math: 70, phy: 70 }, ["hist", "geog", "va"]);
     assert.equal(both.find((item) => item.id === "unused-strength")?.text.zh, "你數學／物理其實幾穩，但未入到組合。想唔想再考慮吓理科？");
-    const phyOnly = electiveDilemmas({ ...base, phy: 8 }, ["chem", "bio", "geog"]);
+    const phyOnly = electiveDilemmas({ ...base, phy: 80 }, ["chem", "bio", "geog"]);
     assert.match(phyOnly.find((item) => item.id === "unused-strength")?.text.zh ?? "", /^你物理其實幾穩/);
-    assert.equal(electiveDilemmas({ ...base, math: 9, phy: 9 }, ["phy", "chem", "bio"]).some((item) => item.id === "unused-strength"), false);
+    assert.equal(electiveDilemmas({ ...base, math: 90, phy: 90 }, ["phy", "chem", "bio"]).some((item) => item.id === "unused-strength"), false);
     assert.equal(electiveDilemmas(base, ["econ", "geog", "hist"]).length, 0);
 
     let run = createRun("fast", "zh");
@@ -470,11 +470,11 @@ describe("hoktou loop", () => {
     const neutral = programmeScore(run, programme);
     assert.equal(abilityLift(run, programme), 0);
     const strong = programmeScore(
-      { ...run, abilities: { ...run.abilities, phy: 10, math: 8, chi: 7, eng: 7 } },
+      { ...run, abilities: { ...run.abilities, phy: 100, math: 80, chi: 70, eng: 70 } },
       programme,
     );
     assert.ok(strong > neutral);
-    assert.equal(parseRun({ ...JSON.parse(JSON.stringify(run)), abilities: undefined, lastAbilities: undefined })?.abilities.math, 5);
+    assert.equal(parseRun({ ...JSON.parse(JSON.stringify(run)), abilities: undefined, lastAbilities: undefined })?.abilities.math, 50);
   });
 
   it("seeds a nickname, interests, abilities and mid life stats, and hides fast", () => {
@@ -485,12 +485,12 @@ describe("hoktou loop", () => {
     assert.equal(run.pace, "standard");
     assert.equal(run.nickname, "家琪");
     assert.deepEqual(run.interests, ["science", "service"]);
-    assert.equal(run.abilities.phy, 6);
-    assert.equal(run.abilities.chem, 6);
-    assert.equal(run.abilities.bio, 6);
-    assert.equal(run.abilities.cs, 6);
-    assert.equal(run.abilities.pe, 5);
-    assert.equal(run.abilities.chi, 5);
+    assert.equal(run.abilities.phy, 60);
+    assert.equal(run.abilities.chem, 60);
+    assert.equal(run.abilities.bio, 60);
+    assert.equal(run.abilities.cs, 60);
+    assert.equal(run.abilities.pe, 50);
+    assert.equal(run.abilities.chi, 50);
     assert.equal(lifePoint(run.stats.academic), 6);
     assert.equal(lifePoint(run.stats.curiosity), 6);
     assert.equal(lifePoint(run.stats.wellbeing), 6);
@@ -498,19 +498,19 @@ describe("hoktou loop", () => {
     assert.equal(lifePoint(START_STATS.academic), 5);
     assert.equal(lifePoint(START_STATS.wellbeing), 6);
     const both = seedProfile(["business", "computer"]);
-    assert.equal(both.abilities.math, 7);
-    assert.equal(both.abilities.ict, 6);
-    assert.equal(both.abilities.econ, 6);
+    assert.equal(both.abilities.math, 70);
+    assert.equal(both.abilities.ict, 60);
+    assert.equal(both.abilities.econ, 60);
     const old = JSON.parse(JSON.stringify(createRun("fast", "en"))) as Record<string, unknown>;
     delete old.nickname;
     delete old.interests;
     const parsed = parseRun(old);
     assert.equal(parsed?.nickname, "");
     assert.deepEqual(parsed?.interests, []);
-    assert.equal(parsed?.abilities.math, 5);
+    assert.equal(parsed?.abilities.math, 50);
   });
 
-  it("closes mapped opportunities at life stat 4 and at subject ability 4", () => {
+  it("closes mapped opportunities at life stat 4 and at subject ability 40", () => {
     assert.equal(lifePoint(44), 4);
     assert.equal(lifePoint(45), 5);
     const open = createRun("standard", "zh", { nickname: "阿澄", interests: ["language", "art"] });
@@ -521,8 +521,8 @@ describe("hoktou loop", () => {
     assert.match(studyBlock?.zh ?? "", /奧數/);
     assert.equal(blockReason(toCtx({ ...open, stats: { ...open.stats, academic: 45 } }), "s1-ab-olympiad-go"), null);
     assert.throws(() => applyChoice({ ...lowStudy, sceneId: "s1-ab-olympiad", phase: "scene" }, "s1-ab-olympiad-go"));
-    const weakMath = { ...open, abilities: { ...open.abilities, math: 4 } };
-    assert.match(blockReason(toCtx(weakMath), "s1-ab-olympiad-go")?.zh ?? "", /數學只有 4／10/);
+    const weakMath = { ...open, abilities: { ...open.abilities, math: 40 } };
+    assert.match(blockReason(toCtx(weakMath), "s1-ab-olympiad-go")?.zh ?? "", /數學只有 40／100/);
     const tired = { ...open, stats: { ...open.stats, wellbeing: 40 } };
     assert.match(blockReason(toCtx(tired), "s1-ab-pe-try")?.zh ?? "", /身心只有 4／10/);
     assert.match(blockReason(toCtx(tired), "s3b-camp-full")?.zh ?? "", /兩日學科營/);
@@ -542,13 +542,13 @@ describe("hoktou loop", () => {
     const high: SceneCtx = {
       ...toCtx(open),
       stats: { academic: 80, curiosity: 80, wellbeing: 80, social: 80 },
-      abilities: { ...open.abilities, phy: 8, chem: 8, bio: 8, math: 8, eng: 8, pe: 8 },
+      abilities: { ...open.abilities, phy: 80, chem: 80, bio: 80, math: 80, eng: 80, pe: 80 },
     };
     for (const id of gatedChoiceIds()) assert.equal(blockReason(high, id), null, id);
     const low: SceneCtx = {
       ...toCtx(open),
       stats: { academic: 20, curiosity: 20, wellbeing: 20, social: 20 },
-      abilities: Object.fromEntries(SUBJECT_IDS.map((id) => [id, 3])) as Abilities,
+      abilities: Object.fromEntries(SUBJECT_IDS.map((id) => [id, 30])) as Abilities,
     };
     for (const id of gatedChoiceIds()) {
       const reason = blockReason(low, id);
@@ -572,7 +572,7 @@ describe("hoktou loop", () => {
     assert.equal(biz.math, "m2");
     const letters = seedProfile(["humanities", "art"]);
     assert.deepEqual(suggestElectives(letters.abilities, ["humanities", "art"]).electives, ["hist", "chist", "va"]);
-    const chart = { ...startAbilities(), va: 9, phy: 6, chem: 6, bio: 6, pe: 6 };
+    const chart = { ...startAbilities(), va: 90, phy: 60, chem: 60, bio: 60, pe: 60 };
     assert.deepEqual(suggestElectives(chart, ["science", "sport"]).electives, ["phy", "va", "pe"]);
   });
 });

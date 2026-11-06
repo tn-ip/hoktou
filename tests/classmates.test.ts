@@ -29,7 +29,7 @@ describe("same-September classmates", () => {
     const named = createRun("standard", "zh", { nickname: "  家琪 ", interests: ["science", "science", "language"] });
     const plain = createRun("standard", "zh", { nickname: "家琪", interests: ["science", "language"] });
     assert.deepEqual(named.classmates, plain.classmates);
-    assert.equal(named.version, 3);
+    assert.equal(named.version, 4);
   });
 
   it("does not tie housing to the hardest road", () => {
@@ -93,7 +93,7 @@ describe("same-September classmates", () => {
       offerKind: "degree" as const,
       offerId: "harbour-eng",
       stats: { academic: 96, curiosity: 90, wellbeing: 80, social: 80 },
-      abilities: { ...base.abilities, phy: 9, chem: 9, ict: 9, math: 9, eng: 8, chi: 8 },
+      abilities: { ...base.abilities, phy: 90, chem: 90, ict: 90, math: 90, eng: 80, chi: 80 },
     };
     const likely = pathwayRows(degree, "en");
     const player = likely.find((row) => row.you);
@@ -113,7 +113,7 @@ describe("same-September classmates", () => {
     legacy.version = 2;
     delete legacy.classmates;
     const parsed = parseRun(legacy);
-    assert.equal(parsed?.version, 3);
+    assert.equal(parsed?.version, 4);
     assert.deepEqual(parsed?.classmates, pickClassmates("家琪", ["humanities", "art"]));
     assert.equal(parsed?.reflections[0]?.text, "一句");
     assert.equal(parsed?.pause, null);
