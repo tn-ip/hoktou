@@ -36,7 +36,7 @@ import {
 import { clearRun, loadLang, loadRun, saveLang, saveRun } from "@/lib/storage";
 import { tx } from "@/lib/text";
 import type { ElectiveId, InterestId, Lang, MathModule, ReflectionId, RunState } from "@/lib/types";
-import { AbilityBoard, AbilityEcho, CohortMargin, continueBlurb, EffectLine, LangToggle, PathwayLineup, ReflectionQuotes, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
+import { AbilityBoard, AbilityEcho, CohortMargin, continueBlurb, EffectLine, HappiestYear, LangToggle, PathwayLineup, ReflectionQuotes, ShapeReading, StatFeedback, StatMeters, Stepper, TideArt } from "@/components/widgets";
 
 export function GameApp() {
   const [ready, setReady] = useState(false);
@@ -927,6 +927,9 @@ function SummaryCard({
       <p className="prose">{ending.work}</p>
       <p className="prose">{ending.life}</p>
       <PathwayLineup run={run} lang={lang} closing />
+      <h2>{tx(lang, copy.shapeHeading)}</h2>
+      <ShapeReading run={run} lang={lang} />
+      <HappiestYear run={run} lang={lang} />
       <h2>{tx(lang, copy.statsLabel)}</h2>
       <StatMeters stats={run.stats} delta={null} lang={lang} />
       <h2>{tx(lang, copy.timelineHeading)}</h2>

@@ -239,6 +239,7 @@ export function applyChoice(run: RunState, choiceId: string): RunState {
         choiceId: choice.id,
         title: readText(scene.title, ctx),
         choice: choice.label,
+        effects: choice.effects,
       },
     ],
   };
@@ -287,6 +288,7 @@ export function confirmElectives(run: RunState, electives: ElectiveId[], mathMod
           `${joinElectives(electives, "zh")}；${mathLabel(mathModule, "zh", "short")}`,
           `${joinElectives(electives, "en")}; ${mathLabel(mathModule, "en", "short")}`,
         ),
+        effects: {},
       },
     ],
   };

@@ -131,6 +131,7 @@ function readLog(value: unknown): LogEntry[] {
       choiceId: entry.choiceId,
       title: entry.title,
       choice: entry.choice,
+      effects: entry.effects && typeof entry.effects === "object" ? (entry.effects as Partial<Stats>) : {},
     });
   }
   return log;

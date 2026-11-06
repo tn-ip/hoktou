@@ -17,6 +17,8 @@ import {
 } from "@/content/classmates";
 import { quoteWrap, REFLECTION_PROMPTS, reflectionHeading, writtenReflections } from "@/content/reflections";
 import { pathwayRows } from "@/lib/cohort";
+import { axisValues, endingShape, normalizedAxes, SHAPE_AXIS, SHAPE_SENTENCE } from "@/lib/shape";
+import { happiestYear, yearCaption } from "@/lib/year";
 import {
   abilityBand,
   abilityBandLabel,
@@ -341,5 +343,72 @@ export function ReflectionQuotes({ run, lang }: { run: Pick<RunState, "reflectio
         ))}
       </ul>
     </section>
+  );
+}
+
+export function ShapeReading({ run, lang }: { run: RunState; lang: Lang }) {
+  const axes = axisValues(run);
+  const shape = endingShape(axes);
+  const values = normalizedAxes(axes);
+  const size = 180;
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = 64;
+  const angleOf = (index: number) => (Math.PI * 2 * index) / 4 - Math.PI / 2;
+  const points = SHAPE_AXIS.map((_, index) => {
+    const value = values[_.id];
+    const r = Math.abs(value) * radius;
+    const a = angleOf(index);
+    return [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+  });
+
+  return (
+    <section className="shape-reading" data-testid="shape-reading">
+      <svg className="shape-radar" viewBox={`0 0 ${size} ${size}`} role="img" aria-label={tx(lang, shape.label)}>
+        <polygon
+          points={points.map((p) => p.join(",")).join(" ")}
+          fill="rgba(15, 110, 106, 0.18)"
+          stroke="var(--teal)"
+          strokeWidth={2}
+        />
+        {SHAPE_AXIS.map((_, index) => {
+          const a = angleOf(index);
+          const x = cx + radius * Math.cos(a);
+          const y = cy + radius * Math.sin(a);
+          return <line key={_.id} x1={cx} y1={cy} x2={x} y2={y} stroke="var(--line)" />;
+        })}
+      </svg>
+      <ol className="shape-axes" aria-label={tx(lang, copy.shapeAxesLabel)}>
+        {SHAPE_AXIS.map((axis) => (
+          <li key={axis.id} data-axis={axis.id} data-lean={values[axis.id] >= 0 ? "left" : "right"}>
+            <span>{tx(lang, axis.left)}</span>
+            <span className="shape-axis-bar" aria-hidden="true">
+              <i style={{ width: `${Math.round(Math.abs(values[axis.id]) * 100)}%`, marginLeft: values[axis.id] >= 0 ? "auto" : undefined }} />
+            </span>
+            <span>{tx(lang, axis.right)}</span>
+          </li>
+        ))}
+      </ol>
+      <p className="shape-name" data-testid="shape-name">
+        {tx(lang, shape.label)}
+      </p>
+      <p className="shape-sentence" data-testid="shape-sentence">
+        {tx(lang, SHAPE_SENTENCE)}
+      </p>
+    </section>
+  );
+}
+
+export function HappiestYear({ run, lang }: { run: RunState; lang: Lang }) {
+  const happy = happiestYear(run);
+  if (!happy) return null;
+  const caption = yearCaption(happy.year, run.flags);
+  return (
+    <p className="happiest-year" data-testid="happiest-year">
+      {tx(lang, copy.happiestYearHeading)}{" "}
+      {tx(lang, caption)}
+      {" · "}
+      {Math.round(happy.value / 10)}/10
+    </p>
   );
 }
