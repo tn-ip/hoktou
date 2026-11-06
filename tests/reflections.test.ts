@@ -65,7 +65,7 @@ describe("milestone pauses", () => {
   it("gates all four pauses, and a skip stores no line", () => {
     let run = createRun("fast", "zh");
     assert.equal(run.pause, null);
-    assert.equal(run.version, 3);
+    assert.equal(run.version, 4);
     assert.throws(() => resolveReflection(run, null), /No pause is open/);
     run = applyChoice(run, choiceIds(run)[0]);
     assert.equal(run.pause, "s1");
@@ -83,7 +83,7 @@ describe("milestone pauses", () => {
     assert.equal(run.pause, "s3");
     assert.equal(run.sceneId, "s3-crossroad");
     assert.throws(() => confirmElectives(run, ["phy", "chem", "bio"], "m2"), /Pause s3 is open/);
-    const warnings = electiveDilemmas({ ...startAbilities(), chem: 4 }, ["chem", "hist", "geog"]);
+    const warnings = electiveDilemmas({ ...startAbilities(), chem: 40 }, ["chem", "hist", "geog"]);
     assert.equal(warnings[0]?.id, "gap-chem");
     run = resolveReflection(run, "   ");
     assert.equal(run.reflections.find((item) => item.id === "s3")?.skipped, true);
@@ -204,7 +204,7 @@ describe("milestone pauses", () => {
     delete legacy.pause;
     delete legacy.nickname;
     const parsed = parseRun(legacy);
-    assert.equal(parsed?.version, 3);
+    assert.equal(parsed?.version, 4);
     assert.equal(parsed?.nickname, "");
     assert.deepEqual(parsed?.reflections, []);
     assert.equal(parsed?.pause, null);
@@ -215,7 +215,7 @@ describe("milestone pauses", () => {
     const roundTrip = parseRun(JSON.parse(JSON.stringify(paused)));
     assert.equal(roundTrip?.pause, "s1");
     assert.equal(roundTrip?.sceneId, "s2-clubs");
-    assert.equal(roundTrip?.version, 3);
+    assert.equal(roundTrip?.version, 4);
 
     const corrupt = {
       ...paused,
@@ -233,7 +233,7 @@ describe("milestone pauses", () => {
     assert.equal(cleaned?.reflections.find((item) => item.id === "s3")?.skipped, true);
     assert.equal(cleaned?.reflections.find((item) => item.id === "s3")?.text, "");
     assert.equal(cleaned?.reflections.some((item) => item.id === "s6"), true);
-    assert.equal(parseRun({ version: 3, pace: "fast", lang: "en", phase: "scene", sceneId: "s1-arrival" }), null);
+    assert.equal(parseRun({ version: 4, pace: "fast", lang: "en", phase: "scene", sceneId: "s1-arrival" }), null);
     assert.equal(parseRun({ version: 2 }), null);
 
     const ui = readFileSync("components/GameApp.tsx", "utf8");

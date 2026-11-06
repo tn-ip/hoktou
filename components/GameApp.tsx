@@ -637,7 +637,7 @@ function ElectiveCard({
                 >
                   <strong>{tx(lang, item.name)}</strong>
                   <small>
-                    {tx(lang, copy.abilityOf)} {run.abilities[item.id]}/10 · {tx(lang, item.hint)}
+                    {tx(lang, copy.abilityOf)} {run.abilities[item.id]}/100 · {tx(lang, item.hint)}
                   </small>
                 </button>
               );
@@ -898,8 +898,19 @@ function SummaryCard({
 }) {
   const offer = offerView(run, lang);
   const ending = endingView(run, lang);
+  function exportPdf() {
+    const originalTitle = document.title;
+    const name = run.nickname || (lang === "zh" ? "學途" : "Hoktou");
+    document.title = lang === "zh" ? `學途-${name}.pdf` : `Hoktou-${name}.pdf`;
+    function restore() {
+      document.title = originalTitle;
+      window.removeEventListener("afterprint", restore);
+    }
+    window.addEventListener("afterprint", restore);
+    window.print();
+  }
   return (
-    <article className="card">
+    <article className="card summary-card">
       <p className="kicker">{tx(lang, copy.summaryKicker)}</p>
       <h1 ref={headingRef} tabIndex={-1} data-testid="card-title">
         {tx(lang, copy.summaryTitle)}
@@ -945,8 +956,12 @@ function SummaryCard({
           </li>
         ))}
       </ol>
+      <button type="button" className="primary no-print" data-testid="export-pdf" onClick={exportPdf}>
+        {tx(lang, copy.exportPdf)}
+        <span>{tx(lang, copy.exportPdfHint)}</span>
+      </button>
       {confirmRestart ? (
-        <div className="confirm">
+        <div className="confirm no-print">
           <p>{tx(lang, copy.confirmRestart)}</p>
           <button type="button" className="primary" data-testid="restart" onClick={onRestart}>
             {tx(lang, copy.restart)}
@@ -956,7 +971,7 @@ function SummaryCard({
           </button>
         </div>
       ) : (
-        <button type="button" className="primary" data-testid="ask-restart" onClick={onAsk}>
+        <button type="button" className="primary no-print" data-testid="ask-restart" onClick={onAsk}>
           {tx(lang, copy.restart)}
         </button>
       )}

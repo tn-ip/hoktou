@@ -10,13 +10,7 @@ function choice(
   ability: Partial<Abilities>,
   effects: Partial<Stats>,
 ): Choice {
-  return {
-    id,
-    label: line(zh, en),
-    detail: line(detailZh, detailEn),
-    effects,
-    ability,
-  };
+  return { id, label: line(zh, en), detail: line(detailZh, detailEn), effects, ability };
 }
 
 function card(
@@ -32,15 +26,7 @@ function card(
   bodyEn: string,
   options: Choice[],
 ): Scene {
-  return {
-    id,
-    year,
-    kicker: line(kickerZh, kickerEn),
-    title: line(titleZh, titleEn),
-    focus: line(focusZh, focusEn),
-    body: () => line(bodyZh, bodyEn),
-    choices: () => options,
-  };
+  return { id, year, kicker: line(kickerZh, kickerEn), title: line(titleZh, titleEn), focus: line(focusZh, focusEn), body: () => line(bodyZh, bodyEn), choices: () => options };
 }
 
 export const ABILITY_SCENES: Scene[] = [

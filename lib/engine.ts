@@ -3,7 +3,7 @@ import { BASE_STATS, normalizeInterests, seedProfile } from "@/content/interests
 import { clipReflection } from "@/content/reflections";
 import { LIFE_PLAYLIST, PLAYLIST, sceneById, type Beat } from "@/content/scenes";
 import { PROGRAMMES, programmeById, type Programme } from "@/content/programmes";
-import { applyAbilityDelta, joinElectives, mathLabel, startAbilities } from "@/content/subjects";
+import { ABILITY_START, applyAbilityDelta, joinElectives, mathLabel, startAbilities } from "@/content/subjects";
 import { annotateChoices, lifePoint } from "@/lib/gates";
 import { fairAligns, projectTrack } from "@/lib/track";
 import type {
@@ -22,6 +22,7 @@ import type {
   Stats,
   StepId,
   StepStatus,
+  SubjectId,
 } from "@/lib/types";
 import { STAT_KEYS } from "@/lib/types";
 import { line, statLabel } from "@/lib/text";
@@ -149,7 +150,7 @@ export function createRun(pace: Pace, lang: RunState["lang"], profile: StartProf
   const seeded = seedProfile(interests);
   const nickname = (profile.nickname ?? "").trim().slice(0, 16);
   return {
-    version: 3,
+    version: 4,
     pace,
     lang,
     nickname,
@@ -359,15 +360,18 @@ const CS_BOOSTS = new Set(["policy", "humanities", "teaching"]);
 
 export function abilityLift(run: Pick<RunState, "abilities" | "electives">, programme: Programme): number {
   const abilities = run.abilities ?? startAbilities();
+  function liftFor(id: SubjectId): number {
+    return Math.round(((abilities[id] ?? ABILITY_START) - ABILITY_START) / 10);
+  }
   let lift = 0;
   for (const id of programme.electives) {
     if (!run.electives.includes(id)) continue;
-    lift += (abilities[id] ?? 5) - 5;
+    lift += liftFor(id);
   }
-  if (run.electives.includes("pe") && programme.boost === "teaching") lift += (abilities.pe ?? 5) - 5;
-  if (programme.math || MATH_BOOSTS.has(programme.boost)) lift += (abilities.math ?? 5) - 5;
-  if (CS_BOOSTS.has(programme.boost)) lift += (abilities.cs ?? 5) - 5;
-  lift += Math.round((((abilities.chi ?? 5) - 5) + ((abilities.eng ?? 5) - 5)) / 2);
+  if (run.electives.includes("pe") && programme.boost === "teaching") lift += liftFor("pe");
+  if (programme.math || MATH_BOOSTS.has(programme.boost)) lift += liftFor("math");
+  if (CS_BOOSTS.has(programme.boost)) lift += liftFor("cs");
+  lift += Math.round((liftFor("chi") + liftFor("eng")) / 2);
   return Math.max(-12, Math.min(12, lift));
 }
 

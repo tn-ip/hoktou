@@ -17,7 +17,7 @@ function opt(
     label: line(zh, en),
     detail: line(detailZh, detailEn),
     effects,
-    ...(flags ? { flags } : {}),
+    ...(flags ? { flags } : {  }),
   };
 }
 
@@ -34,15 +34,7 @@ function card(
   bodyEn: string,
   options: Choice[],
 ): Scene {
-  return {
-    id,
-    year,
-    kicker: line(kickerZh, kickerEn),
-    title: line(titleZh, titleEn),
-    focus: line(focusZh, focusEn),
-    body: () => line(bodyZh, bodyEn),
-    choices: () => options,
-  };
+  return { id, year, kicker: line(kickerZh, kickerEn), title: line(titleZh, titleEn), focus: line(focusZh, focusEn), body: () => line(bodyZh, bodyEn), choices: () => options };
 }
 
 const made: Scene[] = [
@@ -60,7 +52,7 @@ const made: Scene[] = [
     [
       opt("s1-recess-roof", "上到天台，聽林澄講這間學校的怪事", "Go to the roof and hear Ching's odd facts about the school", "好奇同人際一起動。", "Curiosity and bonds both move.", { curiosity: 3, social: 3, academic: -1 }),
       opt("s1-recess-notes", "留下對家琪的筆記", "Stay and compare notes with Ka-ki", "學業先穩一點。", "Study settles first.", { academic: 3, social: 2 }),
-      opt("s1-recess-alone", "自己坐著，把剛才不懂的一行看完", "Sit alone and finish the line you did not understand", "學業上升，人先遠一點。", "Study rises. People are a little further off.", { academic: 4, curiosity: 1, social: -1 }),
+      opt("s1-recess-alone", "自己坐著，把剛才不懂的一行看完", "Sit alone and finish the line you did not understand", "學業上升，人先遠一點。", "Study rises. People are a little further off.", { academic: 3, curiosity: 1, social: -1 }),
     ],
   ),
   card(
@@ -92,7 +84,7 @@ const made: Scene[] = [
     "體育課測八百米。有人已經在數圈，有人蹲下來綁鞋帶綁很久。老師說可以跑，也可以幫忙計時。",
     "PE is an eight-hundred-metre run. Some people are already counting laps. Someone crouches over a lace for a long time. The teacher says you may run, or you may keep time.",
     [
-      opt("s1-pe-run", "認真跑完，不跟別人比名次", "Run it properly, without racing the ranking", "身心上升。", "Wellbeing rises.", { wellbeing: 4, academic: -1 }),
+      opt("s1-pe-run", "認真跑完，不跟別人比名次", "Run it properly, without racing the ranking", "身心上升。", "Wellbeing rises.", { wellbeing: 3, academic: -1 }),
       opt("s1-pe-time", "幫忙計時，把每個人的圈數記清楚", "Keep time and record every lap clearly", "你在照顧整組人。", "You are looking after the whole group.", { social: 3, academic: 1, wellbeing: 1 }),
       opt("s1-pe-sit", "說自己不適，坐到樹蔭下", "Say you feel unwell and sit in the shade", "身心先緩，運動這課先停。", "Wellbeing eases. This lesson's exercise stops.", { wellbeing: 2, social: -1 }),
     ],
@@ -109,7 +101,7 @@ const made: Scene[] = [
     "明天要交的數學還差三題。群組裡已有人貼了答案。林澄說他做得很慢，但每一題都寫了原因。",
     "Three maths questions are still due tomorrow. Someone has already posted the answers in the chat. Ching says he is slow, but he wrote a reason for each one.",
     [
-      opt("s1-hw-own", "自己算完，算錯再改", "Finish them yourself, and correct what is wrong", "學業最實。", "This is the most solid study.", { academic: 4, curiosity: 2, wellbeing: -2 }),
+      opt("s1-hw-own", "自己算完，算錯再改", "Finish them yourself, and correct what is wrong", "學業最實。", "This is the most solid study.", { academic: 3, curiosity: 2, wellbeing: -2 }),
       opt("s1-hw-why", "問林澄思路，不抄最後一行", "Ask Ching for the approach, not the last line", "好奇同人際都在。", "Curiosity and bonds are both in it.", { curiosity: 3, social: 2, academic: 2 }),
       opt("s1-hw-copy", "把答案抄上，先求交到", "Copy the answers so it is handed in", "交得出，但你知道那不是你的。", "It can be handed in. You know it is not yours.", { academic: 1, curiosity: -3, wellbeing: -1 }),
     ],
@@ -128,7 +120,7 @@ const made: Scene[] = [
     [
       opt("s1-lib-read", "去圖書館，把不懂的一頁弄懂", "Go to the library and make one page clear", "學業同好奇上升。", "Study and curiosity rise.", { academic: 3, curiosity: 3, social: -1 }),
       opt("s1-lib-court", "去球場打一會兒", "Play on the court for a while", "身心同人際回升。", "Wellbeing and bonds recover.", { wellbeing: 3, social: 3, academic: -1 }),
-      opt("s1-lib-home", "準時回家，晚飯前先休息", "Go home on time and rest before dinner", "身心最穩。", "Wellbeing is the steadier gain.", { wellbeing: 4, social: 1 }),
+      opt("s1-lib-home", "準時回家，晚飯前先休息", "Go home on time and rest before dinner", "身心最穩。", "Wellbeing is the steadier gain.", { wellbeing: 3, social: 1 }),
     ],
   ),
   card(
@@ -144,7 +136,7 @@ const made: Scene[] = [
     "The rain outside the gate turns heavy. The café windows fog. Your bag has an unfinished worksheet and a coat that is not dry enough.",
     [
       opt("s1-rain-wait", "在有蓋的走廊等，順便做一題", "Wait under the covered corridor and do one question", "學業有一點，人比較靜。", "A little study. It is quieter.", { academic: 3, curiosity: 1, wellbeing: -1 }),
-      opt("s1-rain-cafe", "跟朋友衝去茶餐廳坐到雨細", "Run to the café with friends until the rain thins", "人際暖，功課先放。", "Bonds warm. Homework waits.", { social: 4, wellbeing: 2, academic: -1 }),
+      opt("s1-rain-cafe", "跟朋友衝去茶餐廳坐到雨細", "Run to the café with friends until the rain thins", "人際暖，功課先放。", "Bonds warm. Homework waits.", { social: 3, wellbeing: 2, academic: -1 }),
       opt("s1-rain-family", "叫家裡來接，你在門口把濕衣換掉", "Ask someone at home to fetch you, and change the wet layer", "你讓人幫忙，身體少挨一點。", "You let someone help. Your body takes less of it.", { wellbeing: 3, social: 2 }),
     ],
   ),
@@ -160,7 +152,7 @@ const made: Scene[] = [
     "綜合科學第一堂實驗，梁老師把手套一盒一盒推過台。有人急著點火，有人只想做記錄。",
     "The first experiment in integrated science. Mr Leung slides boxes of gloves down the bench. Someone is eager to light the flame. Someone only wants to keep the record.",
     [
-      opt("s2-lab-hands", "搶著做手上那一步，做完再核對", "Take the hands-on step, then check it", "好奇上升，也容易趕。", "Curiosity rises, and so does rushing.", { curiosity: 4, academic: 1, wellbeing: -1 }),
+      opt("s2-lab-hands", "搶著做手上那一步，做完再核對", "Take the hands-on step, then check it", "好奇上升，也容易趕。", "Curiosity rises, and so does rushing.", { curiosity: 3, academic: 1, wellbeing: -1 }),
       opt("s2-lab-log", "負責記錄，每一個數字讀兩次", "Keep the log and read every number twice", "學業同好奇都穩。", "Study and curiosity both steady.", { academic: 3, curiosity: 3 }),
       opt("s2-lab-watch", "這堂先看，下一堂再動手", "Watch this lesson. Use your hands next time.", "身心輕，經驗少一點。", "Wellbeing is lighter. The experience is smaller.", { wellbeing: 2, curiosity: 1, academic: -1 }),
     ],
@@ -194,7 +186,7 @@ const made: Scene[] = [
     "壁報的小組已經寫滿。你的名字不在任何一欄。不是有人故意，只是他們起得很快。",
     "The poster groups are already full. Your name is in none of the columns. Nobody meant it. They simply started fast.",
     [
-      opt("s2-group-ask", "走過去問可不可以加入", "Walk over and ask if you can join", "人際要你先開口。", "Bonds need you to speak first.", { social: 4, wellbeing: -1, academic: 1 }),
+      opt("s2-group-ask", "走過去問可不可以加入", "Walk over and ask if you can join", "人際要你先開口。", "Bonds need you to speak first.", { social: 3, wellbeing: -1, academic: 1 }),
       opt("s2-group-solo", "做一份個人版本，交給老師", "Make a solo version and give it to the teacher", "學業還在，人遠一點。", "Study remains. People are further away.", { academic: 3, curiosity: 2, social: -2 }),
       opt("s2-group-wait", "等老師發現再編你", "Wait for the teacher to notice and place you", "你少碰一點尷尬，也少選一點。", "You dodge some awkwardness, and also some choice.", { wellbeing: 1, social: -1 }),
     ],
@@ -211,8 +203,8 @@ const made: Scene[] = [
     "禮堂又要擺攤。科學學會在試一個小電路，班會在數果汁，你其實可以兩邊都不去。",
     "The hall is filling with stalls again. The science club is testing a small circuit. The class association is counting juice. You could go to neither.",
     [
-      opt("s2-fest-science", "去科學學會幫手接線", "Help the science club with the wires", "好奇變成可以給人看的東西。", "Curiosity becomes something you can show.", { curiosity: 4, academic: 1, social: 2 }),
-      opt("s2-fest-class", "去班會數錢和招呼低年級", "Count money for the class stall and greet the younger forms", "人際很忙。", "Bonds get busy.", { social: 4, wellbeing: 1, academic: -1 }),
+      opt("s2-fest-science", "去科學學會幫手接線", "Help the science club with the wires", "好奇變成可以給人看的東西。", "Curiosity becomes something you can show.", { curiosity: 3, academic: 1, social: 2 }),
+      opt("s2-fest-class", "去班會數錢和招呼低年級", "Count money for the class stall and greet the younger forms", "人際很忙。", "Bonds get busy.", { social: 3, wellbeing: 1, academic: -1 }),
       opt("s2-fest-skip", "這週不去，把測驗先溫好", "Skip the week and revise for the test", "學業優先。", "Study comes first.", { academic: 3, curiosity: -1, wellbeing: 1 }),
     ],
   ),
@@ -245,9 +237,9 @@ const made: Scene[] = [
     "測考完的周未，海傍的風很鹹。你可以打球，可以睡，也可以像林澄那樣蹲下去看一堆沖上來的碎塑膠。",
     "The weekend after tests, the waterfront wind is salty. You could play ball, sleep, or crouch like Ching over a line of washed-up plastic.",
     [
-      opt("s2-sea-look", "蹲下去看，把看到的寫進小簿", "Crouch, look, and write what you see in the notebook", "這可能以後變成一個題目。", "This might become a question later.", { curiosity: 4, academic: 1, wellbeing: 1 }),
+      opt("s2-sea-look", "蹲下去看，把看到的寫進小簿", "Crouch, look, and write what you see in the notebook", "這可能以後變成一個題目。", "This might become a question later.", { curiosity: 3, academic: 1, wellbeing: 1 }),
       opt("s2-sea-ball", "跟朋友打球到出汗", "Play ball with friends until you sweat", "身心同人際都鬆。", "Wellbeing and bonds both loosen.", { wellbeing: 3, social: 3 }),
-      opt("s2-sea-sleep", "回家補眠，海留到下一次", "Go home and sleep. The sea can wait.", "身體先收回來。", "The body comes back first.", { wellbeing: 4, curiosity: -1 }),
+      opt("s2-sea-sleep", "回家補眠，海留到下一次", "Go home and sleep. The sea can wait.", "身體先收回來。", "The body comes back first.", { wellbeing: 3, curiosity: -1 }),
     ],
   ),
   card(
@@ -280,7 +272,7 @@ const made: Scene[] = [
     "You lay two years of reports side by side. One column rarely swings. Another is the lesson you actually want. They may not be the same subject.",
     [
       opt("s3-str-steady", "先把穩的那科放進考慮", "Put the steadier subject into the mix first", "學業的把握大一點。", "Study feels more graspable.", { academic: 3, wellbeing: 1 }),
-      opt("s3-str-want", "先把想上的那科放進考慮", "Put the subject you want into the mix first", "好奇會支撐以後的晚上。", "Curiosity will hold up later nights.", { curiosity: 4, academic: 1 }),
+      opt("s3-str-want", "先把想上的那科放進考慮", "Put the subject you want into the mix first", "好奇會支撐以後的晚上。", "Curiosity will hold up later nights.", { curiosity: 3, academic: 1 }),
       opt("s3-str-both", "兩欄都留下，等試堂和師兄再收窄", "Keep both, and narrow them after tasters and seniors", "你延後決定，不假裝已經知道。", "You delay the decision. You do not pretend you already know.", { curiosity: 2, wellbeing: 2, academic: 1 }),
     ],
   ),
@@ -413,13 +405,13 @@ const camp: Scene = {
   focus: line("暑假", "Summer"),
   body: (ctx: SceneCtx) =>
     line(
-      `學校辦了兩日學科營，給剛選了${joinElectives(ctx.electives, "zh")}的人。不是補習，是讓你在開學前看見這三科的功課長什麼樣。`,
-      `The school runs a two-day camp for people who just chose ${joinElectives(ctx.electives, "en")}. It is not a tutorial. It is a look at what the work of those three subjects feels like before term.`,
+      `學校辦了兩日學科營，給剛選了${ joinElectives(ctx.electives, "zh") }的人。不是補習，是讓你在開學前看見這三科的功課長什麼樣。`,
+      `The school runs a two-day camp for people who just chose ${ joinElectives(ctx.electives, "en") }. It is not a tutorial. It is a look at what the work of those three subjects feels like before term.`,
     ),
   choices: () => [
     opt("s3b-camp-full", "兩日都去", "Go both days", "高中會少一點陌生，暑假少兩日。", "Senior school will be less strange. Summer loses two days.", { academic: 3, curiosity: 3, wellbeing: -2, social: 2 }),
     opt("s3b-camp-half", "只去半天，其餘休息", "Go for half a day, then rest", "你取一點資訊，也留一點睡眠。", "You take a little information and leave some sleep.", { curiosity: 2, wellbeing: 2, academic: 1 }),
-    opt("s3b-camp-skip", "不去，開學再面對", "Do not go. Meet it in September.", "身心留在暑假裡。", "Wellbeing stays inside the summer.", { wellbeing: 4, academic: -1 }),
+    opt("s3b-camp-skip", "不去，開學再面對", "Do not go. Meet it in September.", "身心留在暑假裡。", "Wellbeing stays inside the summer.", { wellbeing: 3, academic: -1 }),
   ],
 };
 
@@ -472,7 +464,7 @@ const senior: Scene[] = [
     [
       opt("s4-talk-speak", "你站到前面講", "You stand at the front and speak", "人際和身心都要出場。", "Bonds and wellbeing both have to show up.", { social: 3, academic: 2, wellbeing: -2 }),
       opt("s4-talk-slides", "你做結構和投影片", "You build the structure and the slides", "學業藏在順序裡。", "Study hides in the sequence.", { academic: 3, curiosity: 2 }),
-      opt("s4-talk-sources", "你負責找來源並核對", "You find the sources and check them", "好奇比較具體。", "Curiosity gets specific.", { curiosity: 4, academic: 2, social: 1 }),
+      opt("s4-talk-sources", "你負責找來源並核對", "You find the sources and check them", "好奇比較具體。", "Curiosity gets specific.", { curiosity: 3, academic: 2, social: 1 }),
     ],
   ),
   card(
@@ -487,8 +479,8 @@ const senior: Scene[] = [
     "你量到體溫偏高。測考還有兩日。家琪問要不要把筆記拍照給你。媽媽把體溫計放下，等你自己講。",
     "Your temperature is up. Tests are two days away. Ka-ki asks whether to photograph the notes. Your mother puts the thermometer down and waits for you to speak.",
     [
-      opt("s4-sick-rest", "請假休息，測考用剩下的時間", "Stay home and use whatever time is left for the test", "身心先回到來。", "Wellbeing comes back first.", { wellbeing: 4, academic: -1 }),
-      opt("s4-sick-study", "病著仍按表溫習", "Revise to the plan even while ill", "學業硬撐，身體記帳。", "Study pushes. The body keeps the account.", { academic: 3, wellbeing: -4 }),
+      opt("s4-sick-rest", "請假休息，測考用剩下的時間", "Stay home and use whatever time is left for the test", "身心先回到來。", "Wellbeing comes back first.", { wellbeing: 3, academic: -1 }),
+      opt("s4-sick-study", "病著仍按表溫習", "Revise to the plan even while ill", "學業硬撐，身體記帳。", "Study pushes. The body keeps the account.", { academic: 3, wellbeing: -3 }),
       opt("s4-sick-notes", "休息，並請家琪傳重點給你", "Rest, and ask Ka-ki for the key points", "人在，書也在一部分。", "A person is there, and so is part of the work.", { wellbeing: 3, social: 2, academic: 1 }),
     ],
   ),
@@ -504,7 +496,7 @@ const senior: Scene[] = [
     "學校開放課室給自願留下的人。不是懲罰，也沒有點名。燈會開到八時。",
     "The school leaves classrooms open for anyone who wants to stay. It is not a punishment, and there is no roll call. The lights stay on until eight.",
     [
-      opt("s4-night-stay", "一週留三晚", "Stay three evenings a week", "學業多一段安靜。", "Study gets a quieter stretch.", { academic: 4, wellbeing: -2, social: 1 }),
+      opt("s4-night-stay", "一週留三晚", "Stay three evenings a week", "學業多一段安靜。", "Study gets a quieter stretch.", { academic: 3, wellbeing: -2, social: 1 }),
       opt("s4-night-two", "只留兩晚，其餘回家吃晚飯", "Stay two evenings, and go home for dinner the other days", "兩邊都留一點。", "Both sides keep a share.", { academic: 2, wellbeing: 2, social: 2 }),
       opt("s4-night-home", "不留，功課在家做完就停", "Do not stay. Finish at home, then stop.", "身心的界線清楚。", "The wellbeing boundary is clear.", { wellbeing: 3, academic: 1 }),
     ],
@@ -538,9 +530,26 @@ const senior: Scene[] = [
     "你試著給自己一個睡眠時間。手機的鬧鐘可以定，也可以被你按掉。中五的功課不會因為你睡了就消失。",
     "You try to give yourself a bedtime. The alarm can be set, and it can be dismissed. S5 homework does not vanish because you slept.",
     [
-      opt("s5-sleep-eleven", "十一時準時關燈，未做的明天再算", "Lights out at eleven. What is left waits until tomorrow.", "身心換一點進度。", "Wellbeing trades for a little progress.", { wellbeing: 4, academic: -1 }),
+      opt("s5-sleep-eleven", "十一時準時關燈，未做的明天再算", "Lights out at eleven. What is left waits until tomorrow.", "身心換一點進度。", "Wellbeing trades for a little progress.", { wellbeing: 3, academic: -1 }),
       opt("s5-sleep-flex", "看那天的狀態，但不准連開三晚", "Judge the day, but never three late nights in a row", "界線還在。", "A boundary remains.", { wellbeing: 2, academic: 2, curiosity: 1 }),
-      opt("s5-sleep-late", "能做完就做完，睡眠往後挪", "Finish if you can. Push sleep back.", "學業靠前，身體靠後。", "Study moves forward. The body moves back.", { academic: 3, wellbeing: -4 }),
+      opt("s5-sleep-late", "能做完就做完，睡眠往後挪", "Finish if you can. Push sleep back.", "學業靠前，身體靠後，可能直落到朝早。", "Study moves forward. The body moves back, perhaps into the morning.", { academic: 3, wellbeing: -3 }),
+      opt("s5-night-through", "開夜到朝早", "Stay up until the morning", "多溫了幾個鐘，但明天會很薄。", "You covered a few more hours, but tomorrow will be thin.", { academic: 3, wellbeing: -3, curiosity: -1 }),
+    ],
+  ),
+  card(
+    "s5-drink",
+    "S5",
+    "中五 · 一月",
+    "S5 · January",
+    "書桌前的水",
+    "Water at the desk",
+    "溫習",
+    "Revision",
+    "放學後你留在課室，面前攤開三份練習。水杯已經空了兩小時，肩膀愈來愈緊。",
+    "You stay in the classroom after school with three worksheets open. The cup has been empty for two hours, and your shoulders are tightening.",
+    [
+      opt("s5-drink-skip", "不喝水，也不起身，直到做完這份", "No water and no break until this set is done", "進度會快一點，身體會乾一點。", "The work moves faster. The body dries out.", { academic: 3, wellbeing: -3 }),
+      opt("s5-drink-pause", "定時起身喝水，順便伸展", "Get up to drink water and stretch", "時間少了一點，人還在原位。", "A little time is lost. You stay in one piece.", { wellbeing: 2, academic: -1 }),
     ],
   ),
   card(
@@ -556,8 +565,8 @@ const senior: Scene[] = [
     "Mr Leung or Ms Chan can give you fifteen minutes. There is time for one question, so it has to be the sentence you actually want.",
     [
       opt("s5-men-fit", "問現在的選修還適不適合你", "Ask whether the electives still fit", "懷疑被拿出來看。", "The doubt is taken out and looked at.", { curiosity: 3, academic: 1, wellbeing: 1 }),
-      opt("s5-men-method", "問一種你一直用錯的溫習方法", "Ask about a revision method you have been using badly", "學業變得可改。", "Study becomes changeable.", { academic: 4, curiosity: 2 }),
-      opt("s5-men-tired", "說你很累，想知道可以減哪一塊", "Say you are tired, and ask what can shrink", "身心被當成資料，不是藉口。", "Wellbeing is treated as information, not an excuse.", { wellbeing: 4, social: 1, academic: -1 }, { honestTired: true }),
+      opt("s5-men-method", "問一種你一直用錯的溫習方法", "Ask about a revision method you have been using badly", "學業變得可改。", "Study becomes changeable.", { academic: 3, curiosity: 2 }),
+      opt("s5-men-tired", "說你很累，想知道可以減哪一塊", "Say you are tired, and ask what can shrink", "身心被當成資料，不是藉口。", "Wellbeing is treated as information, not an excuse.", { wellbeing: 3, social: 1, academic: -1 }, { honestTired: true }),
     ],
   ),
   card(
@@ -591,7 +600,7 @@ const senior: Scene[] = [
     [
       opt("s5-trip-go", "去，只帶一科真正弱的練習", "Go, and bring practice for only the subject that is actually weak", "人在一起，學業沒有完全停。", "People are together. Study does not fully stop.", { social: 3, wellbeing: 2, academic: 1 }),
       opt("s5-trip-stay", "留下溫習，讓他們自己去", "Stay and revise. Let them go.", "學業多兩日，飯桌少你。", "Study gains two days. The table loses you.", { academic: 3, social: -2, wellbeing: -1 }),
-      opt("s5-trip-rest", "去，筆記留在家", "Go, and leave the notes at home", "身心得到一段沒有測考的時間。", "Wellbeing gets a stretch without tests.", { wellbeing: 4, social: 3, academic: -1 }),
+      opt("s5-trip-rest", "去，筆記留在家", "Go, and leave the notes at home", "身心得到一段沒有測考的時間。", "Wellbeing gets a stretch without tests.", { wellbeing: 3, social: 3, academic: -1 }),
     ],
   ),
   card(
@@ -641,7 +650,7 @@ const senior: Scene[] = [
     "Several fictional institutions open on the same Saturday. You can visit only the department you already want, or you can make yourself see one room you have never considered.",
     [
       opt("s6-info-aim", "只去最想讀的那個學系", "Visit only the department you most want", "問題會比較深。", "The questions get deeper.", { academic: 2, curiosity: 2 }),
-      opt("s6-info-extra", "心儀的看完，再進一個陌生學系", "See your first choice, then enter an unfamiliar department", "志願的想像被拉開。", "The picture of the list gets wider.", { curiosity: 4, social: 1, wellbeing: -1 }),
+      opt("s6-info-extra", "心儀的看完，再進一個陌生學系", "See your first choice, then enter an unfamiliar department", "志願的想像被拉開。", "The picture of the list gets wider.", { curiosity: 3, social: 1, wellbeing: -1 }),
       opt("s6-info-web", "不去現場，晚上看網頁和課程結構", "Skip the campus and read the pages at night", "資訊在，人的感覺不在。", "The information is there. The feel of the place is not.", { academic: 2, curiosity: 1, wellbeing: 2 }),
     ],
   ),
@@ -725,7 +734,7 @@ const senior: Scene[] = [
     "明天就要把遊戲志願鎖上。今晚還可以睡，可以再看一次科目要求，也可以跟朋友通電話。沒有人能替你按下去。",
     "Tomorrow the game list locks. Tonight you can sleep, read the subject rules once more, or call a friend. Nobody can press it for you.",
     [
-      opt("s6-eve-sleep", "早睡，次序留到明天再看最後一眼", "Sleep early. Look once more tomorrow.", "身心留給遞交那天。", "Wellbeing is saved for the day you submit.", { wellbeing: 4, academic: 1 }),
+      opt("s6-eve-sleep", "早睡，次序留到明天再看最後一眼", "Sleep early. Look once more tomorrow.", "身心留給遞交那天。", "Wellbeing is saved for the day you submit.", { wellbeing: 3, academic: 1 }),
       opt("s6-eve-read", "再核對每科的遊戲條件", "Check each course's game requirement again", "少一次科目對不上。", "One less subject mismatch.", { academic: 3, curiosity: 2, wellbeing: -1 }),
       opt("s6-eve-call", "跟林澄或家琪通十五分鐘", "Talk to Ching or Ka-ki for fifteen minutes", "人在電話裡，名單仍是你的。", "A person is on the phone. The list is still yours.", { social: 3, wellbeing: 2 }),
     ],
@@ -738,8 +747,7 @@ const invite: Scene = {
   kicker: line("中四 · 三月", "S4 · March"),
   title: line("一張邀請", "An invitation"),
   focus: line("校外", "Beyond school"),
-  body: (ctx) => {
-    const track = projectTrack(ctx.electives, ctx.flags.cca);
+  body: (ctx) => { const track = projectTrack(ctx.electives, ctx.flags.cca);
     const zh =
       track === "science"
         ? "有人邀請你參加一個校外的科學工作坊。不是港灣青少年科學展本身，但同一種疲勞。"
@@ -764,10 +772,9 @@ const invite: Scene = {
               : track === "humanities"
                 ? "The community centre wants oral histories and asks if Saturday morning is free."
                 : "The school puts an off-campus invitation in your drawer. Going or not will not be posted on a board.";
-    return line(zh, en);
-  },
+    return line(zh, en); },
   choices: () => [
-    opt("s4-inv-go", "參加，並把它寫進日後的檔案", "Go, and keep it for a later record", "好奇和學業都要付時間。", "Curiosity and study both pay in time.", { curiosity: 4, academic: 2, wellbeing: -2, social: 1 }),
+    opt("s4-inv-go", "參加，並把它寫進日後的檔案", "Go, and keep it for a later record", "好奇和學業都要付時間。", "Curiosity and study both pay in time.", { curiosity: 3, academic: 2, wellbeing: -2, social: 1 }),
     opt("s4-inv-help", "不去台上，只做準備和記錄", "Stay off the stage. Do the preparation and the notes.", "你仍在場。", "You are still in the room.", { academic: 2, social: 2, curiosity: 1 }),
     opt("s4-inv-no", "推掉，中四的測驗已經夠近", "Turn it down. The S4 tests are close enough.", "注意力收回學校。", "Attention comes back to school.", { academic: 2, wellbeing: 2, curiosity: -1 }),
   ],
@@ -783,13 +790,13 @@ const team: Scene = {
     const names = joinElectives(ctx.electives, "zh");
     const namesEn = joinElectives(ctx.electives, "en");
     return line(
-      `專題小組要交一件跟${names}有關的東西。有人想做領導，有人想埋頭查，有人想做最少仍把名字放上去。`,
-      `The project group must hand in something tied to ${namesEn}. Someone wants to lead, someone wants to disappear into the research, someone wants the smallest share and their name still on it.`,
+      `專題小組要交一件跟${ names }有關的東西。有人想做領導，有人想埋頭查，有人想做最少仍把名字放上去。`,
+      `The project group must hand in something tied to ${ namesEn }. Someone wants to lead, someone wants to disappear into the research, someone wants the smallest share and their name still on it.`,
     );
   },
   choices: () => [
-    opt("s5-team-lead", "你做協調，催人和對齊期限", "You coordinate, nudge people, and keep the dates", "人際很累，作品比較會完成。", "Bonds are tiring. The work is more likely to finish.", { social: 4, academic: 2, wellbeing: -2 }),
-    opt("s5-team-dig", "你負責查證和改錯", "You check the facts and correct the errors", "好奇落在細節。", "Curiosity lands in the details.", { curiosity: 4, academic: 3, wellbeing: -1 }),
+    opt("s5-team-lead", "你做協調，催人和對齊期限", "You coordinate, nudge people, and keep the dates", "人際很累，作品比較會完成。", "Bonds are tiring. The work is more likely to finish.", { social: 3, academic: 2, wellbeing: -2 }),
+    opt("s5-team-dig", "你負責查證和改錯", "You check the facts and correct the errors", "好奇落在細節。", "Curiosity lands in the details.", { curiosity: 3, academic: 3, wellbeing: -1 }),
     opt("s5-team-min", "你做分配給你的最少部分", "You do the smallest part assigned to you", "負荷低，印記也淺。", "The load is low. So is the mark you leave.", { wellbeing: 2, academic: 1, social: -1 }),
   ],
 };
@@ -807,7 +814,7 @@ const life: Scene[] = [
     "無論你拿到的是學位、副學位還是一份工作，第一週都有一種相同的暈。迎新、更表、或者一間還未熟的課室。",
     "Whether the game gave you a degree, an associate place, or a job, the first week has the same dizziness. An orientation, a shift list, or a room you do not know yet.",
     [
-      opt("life-ori-people", "先認人，名字寫在電話裡", "Learn people first, and keep the names in your phone", "新人際會比較快。", "New bonds arrive faster.", { social: 4, wellbeing: -1 }, { campus: "people" }),
+      opt("life-ori-people", "先認人，名字寫在電話裡", "Learn people first, and keep the names in your phone", "新人際會比較快。", "New bonds arrive faster.", { social: 3, wellbeing: -1 }, { campus: "people" }),
       opt("life-ori-map", "先摸清地方和流程", "Learn the place and the process first", "之後少走冤枉路。", "Later you waste fewer steps.", { academic: 2, curiosity: 2, wellbeing: 1 }, { campus: "map" }),
       opt("life-ori-home", "能留在自己角落就留", "Stay in your own corner when you can", "刺激少，節奏穩。", "Less noise. A steadier pace.", { wellbeing: 3, social: -1 }, { campus: "home" }),
     ],
@@ -824,7 +831,7 @@ const life: Scene[] = [
     "課表或更表都比中學密。沒有人會因為你準時停就頒獎。你仍然要決定停不停。",
     "The timetable or the shift list is denser than school. Nobody gives a prize for stopping on time. You still decide whether to stop.",
     [
-      opt("life-hours-stop", "寫下收工時間，並盡量遵守", "Write a stopping time and try to keep it", "身心有邊界。", "Wellbeing gets a boundary.", { wellbeing: 4, academic: 1 }, { hours: "bounded" }),
+      opt("life-hours-stop", "寫下收工時間，並盡量遵守", "Write a stopping time and try to keep it", "身心有邊界。", "Wellbeing gets a boundary.", { wellbeing: 3, academic: 1 }, { hours: "bounded" }),
       opt("life-hours-more", "做得完就留下", "Stay when there is more to finish", "產出多，人更薄。", "More gets produced. You get thinner.", { academic: 3, curiosity: 1, wellbeing: -3 }, { hours: "overtime" }),
       opt("life-hours-shift", "按更表生活，空檔才是你的", "Live by the shifts. The gaps are yours.", "節奏碎，但可預計。", "The rhythm is broken, and it is predictable.", { wellbeing: 1, social: 1, academic: 1 }, { hours: "shifts" }),
     ],
@@ -892,7 +899,7 @@ const life: Scene[] = [
     "中學的群組還在。有人傳午餐，有人已經很少說話。你要決定這條線保持多密。",
     "The school chat is still there. Someone sends lunch. Someone rarely speaks. You decide how dense this line stays.",
     [
-      opt("life-fr-keep", "每月仍約一次", "Still meet once a month", "舊人際沒有被新生活刪掉。", "Old bonds are not deleted by the new life.", { social: 4, wellbeing: 1 }, { oldFriends: "keep" }),
+      opt("life-fr-keep", "每月仍約一次", "Still meet once a month", "舊人際沒有被新生活刪掉。", "Old bonds are not deleted by the new life.", { social: 3, wellbeing: 1 }, { oldFriends: "keep" }),
       opt("life-fr-new", "把力氣放在新環境的人", "Put the energy into people in the new place", "新的座位先坐熱。", "The new seat gets warm first.", { social: 3, curiosity: 1, wellbeing: -1 }, { oldFriends: "new" }),
       opt("life-fr-quiet", "少回訊息，需要時才出現", "Answer less, and appear when it matters", "安靜是你選的。", "The quiet is chosen.", { wellbeing: 2, social: -2 }, { oldFriends: "quiet" }),
     ],
@@ -909,7 +916,7 @@ const life: Scene[] = [
     "床頭或電腦裡可能還有海傍、實驗、店子或一段口述。沒有人再給你分數。你可以追，可以拿去教人，也可以先合上。",
     "By the bed or on the computer there may still be the waterfront, a lab, a shop, or an interview. Nobody is grading it. You can follow it, teach it, or close it for now.",
     [
-      opt("life-q-keep", "私下繼續追，不為履歷", "Keep following it in private, not for a CV", "好奇還有一條自己的線。", "Curiosity keeps a line of its own.", { curiosity: 4, wellbeing: -1 }, { sideQuest: "question" }),
+      opt("life-q-keep", "私下繼續追，不為履歷", "Keep following it in private, not for a CV", "好奇還有一條自己的線。", "Curiosity keeps a line of its own.", { curiosity: 3, wellbeing: -1 }, { sideQuest: "question" }),
       opt("life-q-teach", "講給更年少的人聽", "Explain it to someone younger", "你把問題交出去一半。", "You hand half the question onward.", { social: 3, curiosity: 2, academic: 1 }, { sideQuest: "teach" }),
       opt("life-q-drop", "先合上，等生活鬆一點", "Close it until life is looser", "注意力在眼前。", "Attention stays on what is in front of you.", { wellbeing: 3, curiosity: -2 }, { sideQuest: "drop" }),
     ],
@@ -926,9 +933,9 @@ const life: Scene[] = [
     "星期日沒有校鐘。你可以去海傍，可以補未做的事，也可以把這天留給人。遊戲不會告訴你哪一種比較正確。",
     "Sunday has no school bell. You can go to the waterfront, finish what is unfinished, or give the day to people. The game will not tell you which is correct.",
     [
-      opt("life-sun-sea", "去看海，不帶工作", "Go to look at the sea, and bring no work", "身心回到一個舊地方。", "Wellbeing returns to an old place.", { wellbeing: 4, curiosity: 1 }, { sunday: "sea" }),
+      opt("life-sun-sea", "去看海，不帶工作", "Go to look at the sea, and bring no work", "身心回到一個舊地方。", "Wellbeing returns to an old place.", { wellbeing: 3, curiosity: 1 }, { sunday: "sea" }),
       opt("life-sun-work", "把落後的一塊補完", "Finish the piece that fell behind", "明天輕一點，今天沒有空。", "Tomorrow is lighter. Today is not free.", { academic: 3, wellbeing: -2 }, { sunday: "work" }),
-      opt("life-sun-people", "這天只見人", "See people, and nothing else", "人際是這天的全部。", "Bonds are the whole of the day.", { social: 4, wellbeing: 2 }, { sunday: "people" }),
+      opt("life-sun-people", "這天只見人", "See people, and nothing else", "人際是這天的全部。", "Bonds are the whole of the day.", { social: 3, wellbeing: 2 }, { sunday: "people" }),
     ],
   ),
 ];

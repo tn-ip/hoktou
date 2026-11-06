@@ -180,7 +180,7 @@ export type Classmate = {
 };
 
 export type RunState = {
-  version: 3;
+  version: 4;
   pace: Pace;
   lang: Lang;
   nickname: string;
